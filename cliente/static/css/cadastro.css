@@ -161,3 +161,28 @@ button:hover {
         padding: 25px;
     }
 }
+
+.form-group select {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    font-size: 15px;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.form-group select:focus {
+    border-color: #3498db;
+
+    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+}

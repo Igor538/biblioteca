@@ -26,3 +26,8 @@ Thumbs.db
 # Arquivos temporários
 *.tmp
 *.bak
+
+# Banco de dados
+banco/*.db
+banco/*.sqlite
+banco/*.sqlite3
