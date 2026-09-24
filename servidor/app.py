@@ -10,22 +10,18 @@ usuarios = []
 
 
 @app.route("/")
-def home():
-    return redirect(url_for("login"))
+def index():
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     if request.method == "POST":
-
         email = request.form.get("email")
         senha = request.form.get("senha")
 
         for usuario in usuarios:
-
             if usuario["email"] == email and usuario["senha"] == senha:
-
                 return jsonify({
                     "sucesso": True,
                     "mensagem": f"Bem-vindo, {usuario['nome']}!"
@@ -41,24 +37,18 @@ def login():
 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
-
     if request.method == "POST":
-
         nome = request.form.get("nome")
         email = request.form.get("email")
         senha = request.form.get("senha")
 
-        # Verifica se o e-mail já está cadastrado
         for usuario in usuarios:
-
             if usuario["email"] == email:
-
                 return jsonify({
                     "sucesso": False,
                     "mensagem": "Este e-mail já está cadastrado."
                 })
 
-        # Cria o usuário
         usuarios.append({
             "nome": nome,
             "email": email,
@@ -67,11 +57,7 @@ def cadastro():
 
         return jsonify({
             "sucesso": True,
-            "mensagem": "Cadastro realizado com sucesso!"
+            "mensagem": "Cadastro realizado com sucesso."
         })
 
     return render_template("cadastro.html")
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
