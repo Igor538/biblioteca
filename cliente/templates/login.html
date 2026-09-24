@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Biblioteca</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body>
+
+    <div class="login-area">
+
+        <!-- Formulário de login -->
+        <div class="container">
+
+            <h2>Login da Biblioteca 📖</h2>
+
+            <form id="loginForm">
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="E-mail"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Senha"
+                    required
+                >
+
+                <div id="mensagem"></div>
+
+                <button type="submit">
+                    Entrar
+                </button>
+
+            </form>
+
+            <p>
+                Não possui conta?
+                <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
+            </p>
+
+        </div>
+
+        <!-- GIF do livro -->
+        <div class="gif-container">
+
+            <img
+                src="{{ url_for('static', filename='img/biblioteca.gif') }}"
+                alt="Livro animado"
+            >
+
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
+</body>
+
+</html>
