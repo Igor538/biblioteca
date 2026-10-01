@@ -1,3 +1,7 @@
+/* =========================
+   CONFIGURAÇÕES GERAIS
+========================= */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,184 +9,340 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
+:root {
+    --primary: #3498db;
+    --primary-dark: #3498db;
+    --background: #f3f6fb;
+    --surface: #ffffff;
+    --text: #202b3c;
+    --muted: #718096;
+    --border: #dce3ed;
+    --focus: rgba(36, 87, 167, 0.13);
+}
+
 body {
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: #f2f4f7;
+    padding: 40px 20px;
+    background: var(--background);
+    color: var(--text);
 }
+
+/* =========================
+   CONTAINER PRINCIPAL
+========================= */
 
 .cadastro-container {
-    width: 420px;
-    background: #ffffff;
-
-    padding: 35px;
-
-    border-radius: 12px;
-
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 42px 48px;
+    background: var(--surface);
+    border: 1px solid #e7ecf3;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(31, 50, 80, 0.08);
 }
+
+/* =========================
+   CABEÇALHO
+========================= */
 
 .cadastro-header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 38px;
+}
+
+.logo {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.biblioteca-label {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.8px;
 }
 
 .cadastro-header h1 {
-    color: #2c3e50;
-    font-size: 30px;
-    margin-bottom: 8px;
-}
-
-.cadastro-header h2 {
-    color: #333;
-    font-size: 22px;
-    margin-bottom: 8px;
+    margin-bottom: 9px;
+    color: var(--text);
+    font-size: 29px;
+    font-weight: 700;
 }
 
 .cadastro-header p {
-    color: #777;
+    color: var(--muted);
     font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================
+   SEÇÕES DO FORMULÁRIO
+========================= */
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.section-number {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #edf3fc;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.section-heading h2 {
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 17px;
+}
+
+.section-heading p {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* =========================
+   ORGANIZAÇÃO DOS CAMPOS
+========================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 18px;
 }
 
 .form-group {
-    margin-bottom: 18px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
 }
 
 .form-group label {
-    display: block;
-
-    margin-bottom: 7px;
-
-    color: #333;
-
-    font-size: 14px;
-    font-weight: bold;
+    color: #354258;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
-
-    padding: 12px;
-
-    border: 1px solid #ccc;
-    border-radius: 6px;
-
-    font-size: 15px;
-
+    min-width: 0;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
     outline: none;
-
-    transition: 0.2s;
-}
-
-.form-group input:focus {
-    border-color: #3498db;
-
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+    background: #ffffff;
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-group input::placeholder {
-    color: #999;
+    color: #a0aaba;
 }
 
-button {
-    width: 100%;
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus);
+}
 
-    padding: 13px;
-
-    margin-top: 5px;
-
-    background: #3498db;
-    color: white;
-
-    border: none;
-    border-radius: 6px;
-
-    font-size: 16px;
-    font-weight: bold;
-
+.form-group select {
     cursor: pointer;
-
-    transition: 0.2s;
 }
 
-button:hover {
-    background: #2980b9;
+/* =========================
+   MENSAGENS
+========================= */
+
+#mensagem {
+    display: none;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
 }
+
+#mensagem:not(:empty) {
+    display: block;
+}
+
+.mensagem-erro {
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+}
+
+.mensagem-sucesso {
+    color: #067647;
+    background: #ecfdf3;
+    border: 1px solid #abefc6;
+}
+
+/* =========================
+   BOTÃO
+========================= */
+
+.btn-cadastrar {
+    width: 100%;
+    min-height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.btn-cadastrar:hover {
+    background: var(--primary-dark);
+}
+
+.btn-cadastrar:active {
+    transform: scale(0.99);
+}
+
+.btn-cadastrar span {
+    font-size: 19px;
+}
+
+/* =========================
+   LINK PARA LOGIN
+========================= */
 
 .login-link {
+    margin-top: 24px;
     text-align: center;
-
-    margin-top: 20px;
 }
 
 .login-link p {
-    color: #666;
-
-    font-size: 14px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .login-link a {
-    color: #3498db;
-
-    text-decoration: none;
-
+    color: var(--primary);
     font-weight: bold;
+    text-decoration: none;
 }
 
 .login-link a:hover {
     text-decoration: underline;
 }
 
-#mensagem {
-    margin-bottom: 12px;
+/* =========================
+   TABLETS
+========================= */
 
-    text-align: center;
-
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.mensagem-erro {
-    color: #e74c3c;
-}
-
-.mensagem-sucesso {
-    color: #27ae60;
-}
-
-@media (max-width: 500px) {
+@media (max-width: 700px) {
+    body {
+        padding: 25px 14px;
+    }
 
     .cadastro-container {
-        width: 90%;
-
-        padding: 25px;
+        padding: 32px 26px;
     }
 }
 
-.form-group select {
-    width: 100%;
+/* =========================
+   CELULARES
+========================= */
 
-    padding: 12px;
+@media (max-width: 520px) {
+    body {
+        padding: 14px 10px;
+    }
 
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    .cadastro-container {
+        padding: 27px 19px;
+        border-radius: 12px;
+    }
 
-    background: #ffffff;
+    .cadastro-header {
+        margin-bottom: 30px;
+    }
 
-    font-size: 15px;
+    .cadastro-header h1 {
+        font-size: 25px;
+    }
 
-    outline: none;
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 17px;
+    }
 
-    cursor: pointer;
+    .form-group.full-width {
+        grid-column: auto;
+    }
 
-    transition: 0.2s;
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 23px;
+    }
+
+    .section-heading {
+        margin-bottom: 18px;
+    }
 }
 
-.form-group select:focus {
-    border-color: #3498db;
+/* =========================
+   TELAS MUITO PEQUENAS
+========================= */
 
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+@media (max-width: 360px) {
+    .cadastro-container {
+        padding: 23px 15px;
+    }
+
+    .cadastro-header h1 {
+        font-size: 22px;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 13px;
+    }
 }

@@ -73,7 +73,6 @@ def cadastro():
         telefone = request.form.get("telefone", "").strip()
         matricula = request.form.get("matricula", "").strip()
         curso = request.form.get("curso", "").strip()
-        setor = request.form.get("setor", "").strip()
         tipo_usuario = request.form.get("tipo_usuario", "").strip()
         senha = request.form.get("senha", "")
 
@@ -127,13 +126,6 @@ def cadastro():
             })
 
 
-        if not setor:
-            return jsonify({
-                "sucesso": False,
-                "mensagem": "O setor é obrigatório."
-            })
-
-
         if not tipo_usuario:
             return jsonify({
                 "sucesso": False,
@@ -182,7 +174,6 @@ def cadastro():
                 telefone=telefone,
                 matricula=matricula,
                 curso=curso,
-                setor=setor,
                 tipo_usuario=tipo_usuario,
                 senha=senha_hash
             )
