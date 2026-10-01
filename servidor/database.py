@@ -28,7 +28,6 @@ def criar_tabela_usuarios():
             telefone TEXT NOT NULL,
             matricula TEXT NOT NULL UNIQUE,
             curso TEXT NOT NULL,
-            setor TEXT NOT NULL,
             tipo_usuario TEXT NOT NULL,
             senha TEXT NOT NULL
         )
@@ -97,7 +96,6 @@ def cadastrar_usuario(
     telefone,
     matricula,
     curso,
-    setor,
     tipo_usuario,
     senha
 ):
@@ -113,11 +111,10 @@ def cadastrar_usuario(
             telefone,
             matricula,
             curso,
-            setor,
             tipo_usuario,
             senha
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             nome,
@@ -127,7 +124,6 @@ def cadastrar_usuario(
             telefone,
             matricula,
             curso,
-            setor,
             tipo_usuario,
             senha
         )
