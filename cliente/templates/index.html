@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Sistema de Gerenciamento para organização, controle e consulta de informações."
+    >
+
+    <title>Sistema de Gerenciamento</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <!-- =========================
+         CABEÇALHO
+    ========================== -->
+
+    <header class="header">
+
+        <div class="container header-content">
+
+            <a href="{{ url_for('index') }}" class="logo">
+
+                <span class="logo-icon">
+                    ◆
+                </span>
+
+                <span>
+                    Sistema de Gerenciamento
+                </span>
+
+            </a>
+
+
+            <button
+                class="menu-button"
+                id="menuButton"
+                type="button"
+                aria-label="Abrir menu"
+            >
+                ☰
+            </button>
+
+
+            <nav class="navigation" id="navigation">
+
+                <a href="#inicio">
+                    Início
+                </a>
+
+                <a href="#sobre">
+                    Sobre
+                </a>
+
+                <a href="#recursos">
+                    Recursos
+                </a>
+
+                <a href="#beneficios">
+                    Benefícios
+                </a>
+
+                <a href="#contato">
+                    Contato
+                </a>
+
+                <a
+                    href="{{ url_for('login') }}"
+                    class="button button-login"
+                >
+                    Entrar
+                </a>
+
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- =========================
+             HERO
+        ========================== -->
+
+        <section class="hero" id="inicio">
+
+            <div class="container hero-content">
+
+                <div class="hero-text">
+
+                    <span class="hero-label">
+                        SISTEMA DE GERENCIAMENTO
+                    </span>
+
+
+                    <h1>
+                        Organização e controle em um só lugar.
+                    </h1>
+
+
+                    <p>
+                        Uma solução desenvolvida para facilitar o
+                        gerenciamento de informações, usuários,
+                        recursos e atividades de uma organização.
+                    </p>
+
+
+                    <div class="hero-buttons">
+
+                        <a
+                            href="{{ url_for('login') }}"
+                            class="button button-primary"
+                        >
+                            Acessar sistema
+                        </a>
+
+
+                        <a
+                            href="#sobre"
+                            class="button button-secondary"
+                        >
+                            Conheça o sistema
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-visual">
+
+                    <div class="dashboard-card">
+
+                        <div class="dashboard-header">
+
+                            <div>
+                                <span class="dashboard-small">
+                                    VISÃO GERAL
+                                </span>
+
+                                <h2>
+                                    Gerenciamento
+                                </h2>
+                            </div>
+
+                            <div class="dashboard-status">
+                                ●
+                            </div>
+
+                        </div>
+
+
+                        <div class="dashboard-line"></div>
+
+
+                        <div class="dashboard-items">
+
+                            <div class="dashboard-item">
+
+                                <span class="item-icon">
+                                    ◇
+                                </span>
+
+                                <div>
+                                    <strong>
+                                        Recursos
+                                    </strong>
+
+                                    <small>
+                                        Controle organizado
+                                    </small>
+                                </div>
+
+                            </div>
+
+
+                            <div class="dashboard-item">
+
+                                <span class="item-icon">
+                                    ◎
+                                </span>
+
+                                <div>
+                                    <strong>
+                                        Usuários
+                                    </strong>
+
+                                    <small>
+                                        Informações centralizadas
+                                    </small>
+                                </div>
+
+                            </div>
+
+
+                            <div class="dashboard-item">
+
+                                <span class="item-icon">
+                                    ✓
+                                </span>
+
+                                <div>
+                                    <strong>
+                                        Atividades
+                                    </strong>
+
+                                    <small>
+                                        Acompanhamento simplificado
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             SOBRE
+        ========================== -->
+
+        <section class="section" id="sobre">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        SOBRE O SISTEMA
+                    </span>
+
+
+                    <h2>
+                        Uma solução para simplificar o gerenciamento
+                    </h2>
+
+
+                    <p>
+                        O sistema foi pensado para centralizar
+                        informações e facilitar o controle das
+                        atividades realizadas por uma organização.
+                    </p>
+
+                </div>
+
+
+                <div class="about-grid">
+
+                    <article class="about-card">
+
+                        <div class="card-icon">
+                            01
+                        </div>
+
+                        <h3>
+                            Centralização
+                        </h3>
+
+                        <p>
+                            Reúna informações importantes em um
+                            único ambiente, facilitando o acesso
+                            e a organização dos dados.
+                        </p>
+
+                    </article>
+
+
+                    <article class="about-card">
+
+                        <div class="card-icon">
+                            02
+                        </div>
+
+                        <h3>
+                            Organização
+                        </h3>
+
+                        <p>
+                            Organize recursos, usuários e atividades
+                            de maneira estruturada e prática.
+                        </p>
+
+                    </article>
+
+
+                    <article class="about-card">
+
+                        <div class="card-icon">
+                            03
+                        </div>
+
+                        <h3>
+                            Praticidade
+                        </h3>
+
+                        <p>
+                            Facilite o acesso às informações e
+                            torne os processos de gerenciamento
+                            mais simples.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             RECURSOS
+        ========================== -->
+
+        <section
+            class="section section-light"
+            id="recursos"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        RECURSOS
+                    </span>
+
+
+                    <h2>
+                        Ferramentas para facilitar o dia a dia
+                    </h2>
+
+
+                    <p>
+                        O sistema reúne funcionalidades para
+                        auxiliar no controle e gerenciamento
+                        das informações.
+                    </p>
+
+                </div>
+
+
+                <div class="features-grid">
+
+                    <article class="feature">
+
+                        <span class="feature-number">
+                            01
+                        </span>
+
+                        <h3>
+                            Cadastro
+                        </h3>
+
+                        <p>
+                            Registre e mantenha organizadas as
+                            informações necessárias para o funcionamento
+                            do sistema.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature">
+
+                        <span class="feature-number">
+                            02
+                        </span>
+
+                        <h3>
+                            Usuários
+                        </h3>
+
+                        <p>
+                            Gerencie os usuários e suas informações
+                            de forma centralizada.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature">
+
+                        <span class="feature-number">
+                            03
+                        </span>
+
+                        <h3>
+                            Consulta
+                        </h3>
+
+                        <p>
+                            Encontre informações de maneira rápida
+                            e organizada.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature">
+
+                        <span class="feature-number">
+                            04
+                        </span>
+
+                        <h3>
+                            Controle
+                        </h3>
+
+                        <p>
+                            Acompanhe atividades e recursos para
+                            melhorar a organização dos processos.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             BENEFÍCIOS
+        ========================== -->
+
+        <section class="section" id="beneficios">
+
+            <div class="container benefits-content">
+
+                <div class="benefits-text">
+
+                    <span class="section-label">
+                        BENEFÍCIOS
+                    </span>
+
+
+                    <h2>
+                        Mais organização para quem gerencia.
+                    </h2>
+
+
+                    <p>
+                        A proposta do sistema é reduzir a
+                        dificuldade encontrada no gerenciamento
+                        manual de informações e tornar os processos
+                        mais eficientes.
+                    </p>
+
+                </div>
+
+
+                <div class="benefits-list">
+
+                    <div class="benefit">
+
+                        <span class="benefit-check">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Informações centralizadas
+                            </h3>
+
+                            <p>
+                                Dados organizados em um único
+                                ambiente.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="benefit">
+
+                        <span class="benefit-check">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Acesso facilitado
+                            </h3>
+
+                            <p>
+                                Consulte informações de forma
+                                simples e rápida.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="benefit">
+
+                        <span class="benefit-check">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Processos organizados
+                            </h3>
+
+                            <p>
+                                Tenha maior controle sobre as
+                                atividades realizadas.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="benefit">
+
+                        <span class="benefit-check">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Melhor experiência
+                            </h3>
+
+                            <p>
+                                Uma interface pensada para
+                                facilitar a utilização do sistema.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             CTA
+        ========================== -->
+
+        <section
+            class="cta"
+            id="contato"
+        >
+
+            <div class="container cta-content">
+
+                <div>
+
+                    <span class="cta-label">
+                        SISTEMA DE GERENCIAMENTO
+                    </span>
+
+
+                    <h2>
+                        Pronto para começar?
+                    </h2>
+
+
+                    <p>
+                        Acesse o sistema e tenha suas informações
+                        organizadas em um só lugar.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('login') }}"
+                    class="button button-white"
+                >
+                    Entrar no sistema
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         RODAPÉ
+    ========================== -->
+
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <div>
+
+                <a
+                    href="{{ url_for('index') }}"
+                    class="footer-logo"
+                >
+                    <span>
+                        ◆
+                    </span>
+
+                    Sistema de Gerenciamento
+                </a>
+
+
+                <p>
+                    Organização, controle e praticidade.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <a href="#inicio">
+                    Início
+                </a>
+
+                <a href="#sobre">
+                    Sobre
+                </a>
+
+                <a href="#recursos">
+                    Recursos
+                </a>
+
+                <a href="#contato">
+                    Contato
+                </a>
+
+            </div>
+
+
+            <p class="copyright">
+                © 2026 Sistema de Gerenciamento.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
+
+</body>
+
+</html>

@@ -1,0 +1,348 @@
+/* =========================
+   CONFIGURAÇÕES GERAIS
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+:root {
+    --primary: #3498db;
+    --primary-dark: #3498db;
+    --background: #f3f6fb;
+    --surface: #ffffff;
+    --text: #202b3c;
+    --muted: #718096;
+    --border: #dce3ed;
+    --focus: rgba(36, 87, 167, 0.13);
+}
+
+body {
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: var(--background);
+    color: var(--text);
+}
+
+/* =========================
+   CONTAINER PRINCIPAL
+========================= */
+
+.cadastro-container {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 42px 48px;
+    background: var(--surface);
+    border: 1px solid #e7ecf3;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(31, 50, 80, 0.08);
+}
+
+/* =========================
+   CABEÇALHO
+========================= */
+
+.cadastro-header {
+    text-align: center;
+    margin-bottom: 38px;
+}
+
+.logo {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.biblioteca-label {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.8px;
+}
+
+.cadastro-header h1 {
+    margin-bottom: 9px;
+    color: var(--text);
+    font-size: 29px;
+    font-weight: 700;
+}
+
+.cadastro-header p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================
+   SEÇÕES DO FORMULÁRIO
+========================= */
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.section-number {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #edf3fc;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.section-heading h2 {
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 17px;
+}
+
+.section-heading p {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* =========================
+   ORGANIZAÇÃO DOS CAMPOS
+========================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 18px;
+}
+
+.form-group {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    color: #354258;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input::placeholder {
+    color: #a0aaba;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus);
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+/* =========================
+   MENSAGENS
+========================= */
+
+#mensagem {
+    display: none;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#mensagem:not(:empty) {
+    display: block;
+}
+
+.mensagem-erro {
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+}
+
+.mensagem-sucesso {
+    color: #067647;
+    background: #ecfdf3;
+    border: 1px solid #abefc6;
+}
+
+/* =========================
+   BOTÃO
+========================= */
+
+.btn-cadastrar {
+    width: 100%;
+    min-height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.btn-cadastrar:hover {
+    background: var(--primary-dark);
+}
+
+.btn-cadastrar:active {
+    transform: scale(0.99);
+}
+
+.btn-cadastrar span {
+    font-size: 19px;
+}
+
+/* =========================
+   LINK PARA LOGIN
+========================= */
+
+.login-link {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.login-link p {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.login-link a {
+    color: var(--primary);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   TABLETS
+========================= */
+
+@media (max-width: 700px) {
+    body {
+        padding: 25px 14px;
+    }
+
+    .cadastro-container {
+        padding: 32px 26px;
+    }
+}
+
+/* =========================
+   CELULARES
+========================= */
+
+@media (max-width: 520px) {
+    body {
+        padding: 14px 10px;
+    }
+
+    .cadastro-container {
+        padding: 27px 19px;
+        border-radius: 12px;
+    }
+
+    .cadastro-header {
+        margin-bottom: 30px;
+    }
+
+    .cadastro-header h1 {
+        font-size: 25px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 17px;
+    }
+
+    .form-group.full-width {
+        grid-column: auto;
+    }
+
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 23px;
+    }
+
+    .section-heading {
+        margin-bottom: 18px;
+    }
+}
+
+/* =========================
+   TELAS MUITO PEQUENAS
+========================= */
+
+@media (max-width: 360px) {
+    .cadastro-container {
+        padding: 23px 15px;
+    }
+
+    .cadastro-header h1 {
+        font-size: 22px;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 13px;
+    }
+}

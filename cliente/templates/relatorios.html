@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Relatórios</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Gestão</p>
+                            <h1>Relatórios</h1>
+                            <p>Indicadores de circulação, pendências e estatísticas do acervo</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button class="btn btn-primary" id="btnAtualizarRelatorios">
+                                <svg class="ic" aria-hidden="true"><use href="#i-refresh"></use></svg> Atualizar
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="stats-grid" id="relatoriosStats" style="margin-bottom:22px"></div>
+
+                    <div class="card">
+                        <span class="index-tab">Circulação</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg> Movimentação dos últimos 6 meses</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="chartCirculacao" style="width:100%"></div>
+                            <div class="chart-duo">
+                                <div>
+                                    <h4 style="font-size:13px;margin-bottom:10px;color:var(--ink-soft)">Empréstimos por categoria</h4>
+                                    <div id="chartCategoria" style="display:flex;justify-content:center"></div>
+                                </div>
+                                <div>
+                                    <h4 style="font-size:13px;margin-bottom:10px;color:var(--ink-soft)">Obras mais emprestadas</h4>
+                                    <div id="chartTopLivros"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Pendências</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-warning"></use></svg> Empréstimos em atraso</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaAtrasados">
+                                    <thead>
+                                        <tr>
+                                            <th>Usuário</th>
+                                            <th>Livro</th>
+                                            <th>Empréstimo</th>
+                                            <th>Previsão</th>
+                                            <th>Dias de atraso</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="atrasadosBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Usuários com pendências</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg> Situação por usuário</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaPendencias">
+                                    <thead>
+                                        <tr>
+                                            <th>Usuário</th>
+                                            <th>Categoria</th>
+                                            <th>Empréstimos ativos</th>
+                                            <th>Atrasos</th>
+                                            <th>Penalidades ativas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pendenciasBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Acervo</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg> Estatísticas por categoria</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaAcervo">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Títulos</th>
+                                            <th>Exemplares</th>
+                                            <th>Disponíveis</th>
+                                            <th>Emprestados</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="acervoBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Regras de empréstimo</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg> Limites e prazos por categoria</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaRegras">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Limite de livros</th>
+                                            <th>Prazo (dias)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="regrasBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/relatorios.js"></script>
+</body>
+</html>

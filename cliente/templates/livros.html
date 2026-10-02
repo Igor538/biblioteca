@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livros — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Livros</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Acervo</p>
+                            <h1>Livros</h1>
+                            <p>Cadastro completo de obras e gerenciamento do acervo</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button class="btn btn-secondary" id="btnAlternarView" title="Alternar visualização" aria-label="Alternar visualização">
+                                <svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg> <span id="viewLabel">Grade</span>
+                            </button>
+                            <button class="btn btn-primary" id="btnNovoLivro">
+                                <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg> Novo Livro
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="filters">
+                        <div class="form-group">
+                            <input type="text" id="searchLivro" placeholder="Buscar por título, autor ou ISBN...">
+                        </div>
+                        <div class="form-group">
+                            <select id="filtroCategoria">
+                                <option value="">Todas as categorias</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="filtroStatus">
+                                <option value="">Todos os status</option>
+                                <option value="Disponível">Disponível</option>
+                                <option value="Emprestado">Emprestado</option>
+                                <option value="Indisponível">Indisponível</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-count" id="livrosContagem"></div>
+
+                    <div class="card">
+                        <span class="index-tab">Registro</span>
+                        <div class="card-body">
+                            <div class="livros-grid" id="livrosGrid"></div>
+                            <div class="table-responsive" id="livrosTableWrap" style="display:none">
+                                <table class="table" id="tabelaLivros">
+                                    <thead>
+                                        <tr>
+                                            <th>Título</th>
+                                            <th>Autor</th>
+                                            <th>Categoria</th>
+                                            <th>Ano</th>
+                                            <th>Qtd</th>
+                                            <th>Disponível</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="livrosBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="livrosPaginacao"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="livroModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg> <span id="modalTitle">Novo Livro</span></h3>
+                <button class="modal-close" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            </div>
+            <form id="livroForm">
+                <input type="hidden" id="livroId">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="titulo">Título *</label>
+                            <input type="text" id="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subtitulo">Subtítulo</label>
+                            <input type="text" id="subtitulo">
+                        </div>
+                        <div class="form-group">
+                            <label for="autor">Autor *</label>
+                            <input type="text" id="autor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editora">Editora</label>
+                            <input type="text" id="editora">
+                        </div>
+                        <div class="form-group">
+                            <label for="local_publicacao">Local de Publicação</label>
+                            <input type="text" id="local_publicacao">
+                        </div>
+                        <div class="form-group">
+                            <label for="ano">Ano de Publicação</label>
+                            <input type="number" id="ano" min="1500" max="2100">
+                        </div>
+                        <div class="form-group">
+                            <label for="isbn">ISBN *</label>
+                            <input type="text" id="isbn" required placeholder="978-85-00-00000-0">
+                        </div>
+                        <div class="form-group">
+                            <label for="numero_paginas">Número de Páginas</label>
+                            <input type="number" id="numero_paginas" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade</label>
+                            <input type="number" id="quantidade" min="0" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="categoria">Categoria</label>
+                            <select id="categoria">
+                                <option value="">Selecione...</option>
+                                <option value="Literatura Brasileira">Literatura Brasileira</option>
+                                <option value="Fantasia">Fantasia</option>
+                                <option value="Ficção Científica">Ficção Científica</option>
+                                <option value="Romance">Romance</option>
+                                <option value="Suspense">Suspense</option>
+                                <option value="Infantil">Infantil</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Didático">Didático</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="localizacao">Localização (estante)</label>
+                            <input type="text" id="localizacao" placeholder="Ex.: A-01">
+                        </div>
+                        <div class="form-group">
+                            <label for="serie">Série</label>
+                            <input type="text" id="serie">
+                        </div>
+                        <div class="form-group">
+                            <label for="colecao">Coleção</label>
+                            <input type="text" id="colecao">
+                        </div>
+                        <div class="form-group">
+                            <label for="volume">Volume</label>
+                            <input type="text" id="volume">
+                        </div>
+                        <div class="form-group">
+                            <label for="assuntos">Assuntos</label>
+                            <input type="text" id="assuntos">
+                        </div>
+                        <div class="form-group">
+                            <label for="palavras_chave">Palavras-chave</label>
+                            <input type="text" id="palavras_chave">
+                        </div>
+                        <div class="form-group full">
+                            <label for="resumo">Resumo</label>
+                            <textarea id="resumo"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="detalheLivroModal">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg> Detalhes da Obra</h3>
+                <button class="modal-close" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            </div>
+            <div class="modal-body" id="detalheLivroBody"></div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/livros.js"></script>
+</body>
+</html>

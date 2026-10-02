@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta ao Acervo — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Consulta ao Acervo</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Pesquisa</p>
+                            <h1>Consulta ao Acervo</h1>
+                            <p>Encontre obras por título, autor, ISBN, assunto ou editora</p>
+                        </div>
+                    </header>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="search-row">
+                                <div class="search-box search-large">
+                                    <svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg>
+                                    <input type="text" id="searchTermo" placeholder="Digite o termo de busca..." aria-label="Termo de busca">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label for="campoBusca" style="font-size:12px">Campo</label>
+                                    <select id="campoBusca">
+                                        <option value="">Todos os campos</option>
+                                        <option value="titulo">Título</option>
+                                        <option value="autor">Autor</option>
+                                        <option value="isbn">ISBN</option>
+                                        <option value="editora">Editora</option>
+                                        <option value="assuntos">Assuntos</option>
+                                        <option value="categoria">Categoria</option>
+                                        <option value="localizacao">Localização</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="btnBuscar" style="align-self:flex-end">
+                                    <svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-head">
+                        <p id="consultaContagem" class="result-count"></p>
+                    </div>
+
+                    <div id="consultaGrid" class="livros-grid"></div>
+                    <div class="pagination" id="consultaPaginacao"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="modal" id="detalheConsultaModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg> Detalhes da Obra</h3>
+                <button class="modal-close" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            </div>
+            <div class="modal-body" id="detalheConsultaBody"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/consulta.js"></script>
+</body>
+</html>

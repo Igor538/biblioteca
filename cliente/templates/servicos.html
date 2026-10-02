@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviços ao Usuário — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Serviços ao Usuário</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Gestão</p>
+                            <h1>Serviços ao Usuário</h1>
+                            <p>Solicitações de declaração, ficha catalográfica, sugestões e serviços</p>
+                        </div>
+                    </header>
+
+                    <div class="card" id="servicoFormCard">
+                        <span class="index-tab">Nova solicitação</span>
+                        <div class="card-body">
+                            <form id="servicoForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="servicoTipo">Tipo de serviço</label>
+                                        <select id="servicoTipo" required>
+                                            <option value="">Selecione o tipo...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="servicoCamposAdicionais"></div>
+                                <div class="form-group">
+                                    <label for="servicoDescricao">Descrição</label>
+                                    <textarea id="servicoDescricao" rows="4" placeholder="Detalhe sua solicitação..." required></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg> Enviar Solicitação
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Solicitações</span>
+                        <div class="card-header">
+                            <h3><svg class="ic" aria-hidden="true"><use href="#i-service"></use></svg> Histórico de solicitações</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaServicos">
+                                    <thead>
+                                        <tr>
+                                            <th>Solicitante</th>
+                                            <th>Tipo</th>
+                                            <th>Descrição</th>
+                                            <th>Data</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="servicosBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="servicosPaginacao"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="modal" id="servicoRespostaModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-service"></use></svg> Atualizar Solicitação</h3>
+                <button class="modal-close" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="servicoRespostaId">
+                <div class="form-group">
+                    <label for="servicoRespostaStatus">Status</label>
+                    <select id="servicoRespostaStatus">
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Análise">Em Análise</option>
+                        <option value="Concluída">Concluída</option>
+                        <option value="Recusada">Recusada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="servicoRespostaTexto">Resposta ao solicitante</label>
+                    <textarea id="servicoRespostaTexto" rows="3" placeholder="Mensagem de resposta..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-fechar="servicoRespostaModal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarResposta">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/servicos.js"></script>
+</body>
+</html>
