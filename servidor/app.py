@@ -38,7 +38,12 @@ app.secret_key = "biblioteca-chave-secreta-trocar-em-producao"
 # INICIALIZAÇÃO DO BANCO
 # ============================================================
 
+from database import inicializar_banco
+inicializar_banco()
 criar_tabela_usuarios()
+
+from auth import inicializar_administradores
+inicializar_administradores()
 
 
 # Registrar API JSON (blueprints)

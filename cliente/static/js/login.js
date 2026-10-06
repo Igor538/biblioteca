@@ -78,21 +78,36 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // ------------------------------------------------
+            // CONVERTER RESPOSTA PARA JSON
+            // ------------------------------------------------
+
+            let resultado = null;
+
+            try {
+                resultado = await resposta.json();
+            } catch (e) {
+                resultado = null;
+            }
+
+            // ------------------------------------------------
             // VERIFICAR RESPOSTA HTTP
             // ------------------------------------------------
 
             if (!resposta.ok) {
 
-                throw new Error(
-                    `Erro HTTP: ${resposta.status}`
+                mostrarMensagem(
+                    (resultado && resultado.mensagem)
+                        ? resultado.mensagem
+                        : `Erro HTTP: ${resposta.status}`,
+                    "mensagem-erro"
                 );
+
+                return;
             }
 
-            // ------------------------------------------------
-            // CONVERTER RESPOSTA PARA JSON
-            // ------------------------------------------------
-
-            const resultado = await resposta.json();
+            if (!resultado) {
+                throw new Error("Resposta inválida do servidor.");
+            }
 
             // ------------------------------------------------
             // LOGIN CORRETO

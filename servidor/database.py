@@ -54,11 +54,12 @@ def execute(sql, params=None):
 def execute_insert(sql, params=None):
     conexao = conectar()
     try:
-        cursor = conexao.execute(sql, params or [])
-        conexao.commit()
+        cursor =         cursor = conexao.execute(sql, params or [])
         if "RETURNING" in sql.upper():
             linha = cursor.fetchone()
+            conexao.commit()
             return linha[0] if linha else None
+        conexao.commit()
         return cursor.lastrowid
     finally:
         conexao.close()
@@ -101,6 +102,42 @@ def criar_tabela_usuarios():
 
     conexao.commit()
     conexao.close()
+
+
+def inicializar_banco():
+    """Cria o banco a partir de esquema.sql se ele não existir
+    ou estiver com um esquema antigo/incompleto."""
+    esquema = BANCO_DIR / "esquema.sql"
+
+    precisa_recriar = False
+    if not DATABASE.exists():
+        precisa_recriar = True
+    else:
+        try:
+            conexao = conectar()
+            colunas = {
+                linha[1]
+                for linha in conexao.execute("PRAGMA table_info(usuarios)")
+            }
+            tabelas = {
+                linha[0]
+                for linha in conexao.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+            }
+            conexao.close()
+            if "perfil" not in colunas or "livros" not in tabelas:
+                precisa_recriar = True
+        except Exception:
+            precisa_recriar = True
+
+    if precisa_recriar and esquema.exists():
+        conexao = sqlite3.connect(DATABASE)
+        try:
+            conexao.executescript(esquema.read_text(encoding="utf-8-sig"))
+            conexao.commit()
+        finally:
+            conexao.close()
 
 
 def buscar_usuario_por_id(usuario_id):
