@@ -49,9 +49,9 @@
                         <div class="page-head-text">
                             <p class="page-kicker">Panorama</p>
                             <h1>Dashboard</h1>
-                            <p>Visão geral do acervo e da circulação da biblioteca</p>
+                            <p id="pageHeadDescricao">Visão geral do acervo e da circulação da biblioteca</p>
                         </div>
-                        <div class="page-head-actions">
+                        <div class="page-head-actions" id="pageHeadActions">
                             <a href="/relatorios" class="btn btn-secondary">
                                 <svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg> Relatórios
                             </a>
@@ -61,6 +61,7 @@
                         </div>
                     </header>
 
+                    <div id="areaStaff">
                     <div class="alert-banner alert-banner-warning" id="alertaAtrasados" style="display:none">
                         <svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg>
                         <span id="alertaAtrasadosText"></span>
@@ -195,6 +196,82 @@
                                         </thead>
                                         <tbody id="atrasadosBody"></tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div id="areaLeitor" style="display:none">
+                        <div class="alert-banner alert-banner-warning" id="alertaAtrasadosLeitor" style="display:none">
+                            <svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg>
+                            <span id="alertaAtrasadosLeitorText"></span>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card stat-blue">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg></span>
+                                <span class="stat-label">Meus Empréstimos Ativos</span>
+                                <span class="stat-number" id="leitorEmprestimosAtivos">—</span>
+                            </div>
+                            <div class="stat-card stat-orange">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg></span>
+                                <span class="stat-label">Minhas Reservas</span>
+                                <span class="stat-number" id="leitorReservas">—</span>
+                            </div>
+                            <div class="stat-card stat-red">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+                                <span class="stat-label">Livros em Atraso</span>
+                                <span class="stat-number" id="leitorAtrasados">—</span>
+                            </div>
+                            <div class="stat-card stat-green">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg></span>
+                                <span class="stat-label">Notificações não lidas</span>
+                                <span class="stat-number" id="leitorNotificacoes">—</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg> Meus Empréstimos Ativos</h3>
+                                    <a href="/historico" class="btn btn-sm btn-secondary">Ver tudo</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Livro</th>
+                                                    <th>Data Empréstimo</th>
+                                                    <th>Devolução Prevista</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leitorEmprestimosBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg> Minhas Reservas</h3>
+                                    <a href="/reservas" class="btn btn-sm btn-secondary">Ver tudo</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Livro</th>
+                                                    <th>Data da Reserva</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leitorReservasBody"></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -289,6 +289,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     try {
         const resposta = await fetch('/api/usuario');
         if (resposta.status === 401) {
+            localStorage.removeItem('biblioteca_usuario');
             if (!publica) {
                 window.location.href = '/login';
             }
@@ -296,6 +297,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
         const resultado = await resposta.json();
         if (resultado.sucesso && resultado.usuario) {
+            localStorage.setItem('biblioteca_usuario', JSON.stringify(resultado.usuario));
             renderizarSidebar(resultado.usuario);
             renderizarBadgeNotificacoes();
         }

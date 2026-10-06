@@ -130,6 +130,10 @@ document.addEventListener("DOMContentLoaded", () => {
                  * Essa rota existe no app.py.
                  */
 
+                if (resultado.usuario) {
+                    localStorage.setItem("biblioteca_usuario", JSON.stringify(resultado.usuario));
+                }
+
                 setTimeout(() => {
                     window.location.href = "/sistema";
                 }, 300);

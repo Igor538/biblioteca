@@ -377,7 +377,8 @@ def cadastrar_usuario(
     matricula,
     curso,
     tipo_usuario,
-    senha
+    senha,
+    perfil="Usuário",
 ):
     conexao = conectar()
 
@@ -392,9 +393,10 @@ def cadastrar_usuario(
             matricula,
             curso,
             tipo_usuario,
-            senha
+            senha,
+            perfil
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             nome,
@@ -405,7 +407,8 @@ def cadastrar_usuario(
             matricula,
             curso,
             tipo_usuario,
-            senha
+            senha,
+            perfil
         )
     )
 

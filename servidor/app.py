@@ -155,13 +155,24 @@ def login():
     session["usuario_nome"] = usuario["nome"]
     session["usuario_email"] = usuario["email"]
 
+    rotulos_perfil = {
+        "Administrador": "Administrador",
+        "Bibliotecário": "Bibliotecário",
+        "Usuário": "Leitor",
+    }
+    perfil = usuario["perfil"] if "perfil" in usuario.keys() else "Usuário"
+    tipo = usuario["tipo_usuario"] if "tipo_usuario" in usuario.keys() else None
+    rotulo = rotulos_perfil.get(perfil, perfil)
+
     return jsonify({
         "sucesso": True,
-        "mensagem": f"Bem-vindo, {usuario['nome']}!",
+        "mensagem": f"Bem-vindo, {usuario['nome']}! Você é {rotulo}.",
         "usuario": {
             "id": usuario["id"],
             "nome": usuario["nome"],
-            "email": usuario["email"]
+            "email": usuario["email"],
+            "perfil": perfil,
+            "tipo_usuario": tipo,
         }
     }), 200
 
@@ -201,14 +212,21 @@ def cadastro():
     if not telefone:
         return jsonify({"sucesso": False, "mensagem": "O telefone é obrigatório."}), 400
 
-    if not matricula:
-        return jsonify({"sucesso": False, "mensagem": "A matrícula é obrigatória."}), 400
-
-    if not curso:
-        return jsonify({"sucesso": False, "mensagem": "O curso é obrigatório."}), 400
-
     if not tipo_usuario:
         return jsonify({"sucesso": False, "mensagem": "Informe quem você é."}), 400
+
+    tipos_permitidos = ["Aluno", "Professor", "Servidor", "Outro"]
+    if tipo_usuario not in tipos_permitidos:
+        return jsonify({"sucesso": False, "mensagem": "Tipo de usuário inválido para cadastro público."}), 400
+
+    if tipo_usuario in ["Aluno", "Professor"]:
+        if not matricula:
+            return jsonify({"sucesso": False, "mensagem": "A matrícula é obrigatória."}), 400
+        if not curso:
+            return jsonify({"sucesso": False, "mensagem": "O curso é obrigatório."}), 400
+    elif tipo_usuario == "Servidor":
+        if not matricula:
+            return jsonify({"sucesso": False, "mensagem": "A matrícula funcional é obrigatória."}), 400
 
     if not senha:
         return jsonify({"sucesso": False, "mensagem": "A senha é obrigatória."}), 400
@@ -222,7 +240,7 @@ def cadastro():
     if buscar_usuario_por_cpf(cpf):
         return jsonify({"sucesso": False, "mensagem": "Este CPF já está cadastrado."}), 409
 
-    if buscar_usuario_por_matricula(matricula):
+    if matricula and buscar_usuario_por_matricula(matricula):
         return jsonify({"sucesso": False, "mensagem": "Esta matrícula já está cadastrada."}), 409
 
     senha_hash = generate_password_hash(senha)
@@ -234,16 +252,20 @@ def cadastro():
             data_nascimento=data_nascimento,
             email=email,
             telefone=telefone,
-            matricula=matricula,
-            curso=curso,
+            matricula=matricula or None,
+            curso=curso or None,
             tipo_usuario=tipo_usuario,
-            senha=senha_hash
+            senha=senha_hash,
+            perfil="Usuário",
         )
     except Exception as erro:
         print(f"Erro ao cadastrar usuário: {erro}")
         return jsonify({"sucesso": False, "mensagem": "Não foi possível realizar o cadastro."}), 500
 
-    return jsonify({"sucesso": True, "mensagem": "Cadastro realizado com sucesso."}), 200
+    return jsonify({
+        "sucesso": True,
+        "mensagem": f"Cadastro realizado com sucesso! Sua conta foi criada como \"{tipo_usuario}\" com perfil de Leitor. Faça login para acessar.",
+    }), 200
 
 
 # ============================================================

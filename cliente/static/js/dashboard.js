@@ -1,8 +1,14 @@
 document.addEventListener('DOMContentLoaded', async function () {
-    const autenticado = await verificarSessao();
-    if (!autenticado) return;
+    const usuario = await verificarSessao();
+    if (!usuario) return;
 
-    carregarDashboard();
+    const staff = usuario.perfil === 'Administrador' || usuario.perfil === 'Bibliotecário';
+
+    if (staff) {
+        carregarDashboard();
+    } else {
+        carregarDashboardLeitor(usuario);
+    }
 });
 
 async function verificarSessao() {
@@ -12,10 +18,92 @@ async function verificarSessao() {
             window.location.href = '/login';
             return false;
         }
-        return resposta.ok;
+        const resultado = await resposta.json();
+        if (resultado.sucesso && resultado.usuario) {
+            return resultado.usuario;
+        }
+        window.location.href = '/login';
+        return false;
     } catch (erro) {
         window.location.href = '/login';
         return false;
+    }
+}
+
+async function carregarDashboardLeitor(usuario) {
+    const areaStaff = document.getElementById('areaStaff');
+    const areaLeitor = document.getElementById('areaLeitor');
+    const actions = document.getElementById('pageHeadActions');
+    const desc = document.getElementById('pageHeadDescricao');
+
+    if (areaStaff) areaStaff.style.display = 'none';
+    if (areaLeitor) areaLeitor.style.display = '';
+    if (actions) actions.style.display = 'none';
+    if (desc) desc.textContent = 'Acompanhe seus empréstimos, reservas e notificações';
+
+    showLoading();
+    try {
+        const [emprestimos, reservas, notificacoes] = await Promise.all([
+            API.get('/api/emprestimos/ativos'),
+            API.get('/api/reservas'),
+            API.get('/api/notificacoes/nao-lidas'),
+        ]);
+
+        const emprestimosArea = Array.isArray(emprestimos) ? emprestimos : [];
+        const reservasArea = Array.isArray(reservas) ? reservas : [];
+        const reservasAtivas = reservasArea.filter(r => r.status === 'Ativa');
+        const atrasados = emprestimosArea.filter(e => (e.dias_atraso || 0) > 0);
+
+        document.getElementById('leitorEmprestimosAtivos').textContent = emprestimosArea.length;
+        document.getElementById('leitorReservas').textContent = reservasAtivas.length;
+        document.getElementById('leitorAtrasados').textContent = atrasados.length;
+        document.getElementById('leitorNotificacoes').textContent = notificacoes.nao_lidas || 0;
+
+        const alerta = document.getElementById('alertaAtrasadosLeitor');
+        if (atrasados.length > 0) {
+            alerta.style.display = 'flex';
+            document.getElementById('alertaAtrasadosLeitorText').innerHTML =
+                `<strong>Atenção:</strong> você tem ${atrasados.length} livro(s) em atraso. Procure a biblioteca para devolvê-los.`;
+        }
+
+        const tbody = document.getElementById('leitorEmprestimosBody');
+        tbody.innerHTML = '';
+        if (emprestimosArea.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-table">Nenhum empréstimo ativo no momento.</td></tr>';
+        } else {
+            emprestimosArea.forEach(e => {
+                const atrasado = (e.dias_atraso || 0) > 0;
+                const tr = document.createElement('tr');
+                if (atrasado) tr.className = 'row-warning';
+                tr.innerHTML = `
+                    <td>${escapeHtml(e.livro_titulo)}</td>
+                    <td>${formatDate(e.data_emprestimo)}</td>
+                    <td>${formatDate(e.data_prevista_devolucao)}</td>
+                    <td>${getStatusBadge(atrasado ? 'Atrasado' : e.status)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        const rbody = document.getElementById('leitorReservasBody');
+        rbody.innerHTML = '';
+        if (reservasArea.length === 0) {
+            rbody.innerHTML = '<tr><td colspan="3" class="empty-table">Nenhuma reserva encontrada.</td></tr>';
+        } else {
+            reservasArea.slice(0, 8).forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(r.livro_titulo)}</td>
+                    <td>${formatDate(r.data_reserva)}</td>
+                    <td>${getStatusBadge(r.status)}</td>
+                `;
+                rbody.appendChild(tr);
+            });
+        }
+    } catch (erro) {
+        showToast('Erro ao carregar seus dados: ' + erro.message, 'error');
+    } finally {
+        hideLoading();
     }
 }
 
