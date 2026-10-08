@@ -1,10 +1,14 @@
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-BANCO_DIR = BASE_DIR / "banco"
+ESQUEMA = BASE_DIR / "banco" / "esquema.sql"
+
+# Na Vercel o disco é somente leitura (exceto /tmp)
+BANCO_DIR = Path("/tmp") if os.environ.get("VERCEL") else BASE_DIR / "banco"
 BANCO_DIR.mkdir(exist_ok=True)
 
 DATABASE = BANCO_DIR / "biblioteca.db"
@@ -107,7 +111,7 @@ def criar_tabela_usuarios():
 def inicializar_banco():
     """Cria o banco a partir de esquema.sql se ele não existir
     ou estiver com um esquema antigo/incompleto."""
-    esquema = BANCO_DIR / "esquema.sql"
+    esquema = ESQUEMA
 
     precisa_recriar = False
     if not DATABASE.exists():
