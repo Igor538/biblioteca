@@ -15,6 +15,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const mensagem = document.getElementById("mensagem");
 
+    const grupoMatricula = document.getElementById("grupoMatricula");
+    const grupoCurso = document.getElementById("grupoCurso");
+    const labelMatricula = document.getElementById("labelMatricula");
+    const dicaTipo = document.getElementById("tipoUsuarioDica");
+
+    const DICAS_TIPO = {
+        "Aluno": "Você terá acesso ao acervo, poderá reservar livros e acompanhar seus empréstimos.",
+        "Professor": "Você terá acesso ao acervo, poderá reservar livros e acompanhar seus empréstimos.",
+        "Servidor": "Conta para servidores da instituição, com acesso de leitor ao sistema.",
+        "Outro": "Cadastro básico, com acesso de leitor às funcionalidades de consulta.",
+    };
+
+    function atualizarCamposPorTipo() {
+        const tipo = tipoUsuario.value;
+
+        if (dicaTipo) {
+            dicaTipo.textContent = DICAS_TIPO[tipo] || "";
+        }
+
+        const exigeMatricula = tipo === "Aluno" || tipo === "Professor" || tipo === "Servidor";
+        const exigeCurso = tipo === "Aluno" || tipo === "Professor";
+
+        if (grupoMatricula) {
+            grupoMatricula.style.display = exigeMatricula ? "" : "none";
+            if (!exigeMatricula) matricula.value = "";
+        }
+        if (labelMatricula) {
+            labelMatricula.textContent = tipo === "Servidor" ? "Matrícula funcional" : "Matrícula";
+        }
+        if (grupoCurso) {
+            grupoCurso.style.display = exigeCurso ? "" : "none";
+            if (!exigeCurso) curso.value = "";
+        }
+    }
+
+    tipoUsuario.addEventListener("change", atualizarCamposPorTipo);
+    atualizarCamposPorTipo();
+
 
     // ==========================================
     // MÁSCARA DE CPF
@@ -207,9 +245,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-        if (matriculaValor.length === 0) {
+        const exigeMatricula = tipoUsuarioValor === "Aluno" || tipoUsuarioValor === "Professor" || tipoUsuarioValor === "Servidor";
+        const exigeCurso = tipoUsuarioValor === "Aluno" || tipoUsuarioValor === "Professor";
 
-            mensagem.textContent = "Digite sua matrícula.";
+        if (exigeMatricula && matriculaValor.length === 0) {
+
+            mensagem.textContent = tipoUsuarioValor === "Servidor" ? "Digite sua matrícula funcional." : "Digite sua matrícula.";
             mensagem.className = "mensagem-erro";
 
             matricula.focus();
@@ -218,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-        if (cursoValor.length === 0) {
+        if (exigeCurso && cursoValor.length === 0) {
 
             mensagem.textContent = "Digite seu curso.";
             mensagem.className = "mensagem-erro";

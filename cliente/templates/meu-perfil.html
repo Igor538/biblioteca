@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Pergamum — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Meu Pergamum</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Conta</p>
+                            <h1>Meu Pergamum</h1>
+                            <p>Seus dados, limites de empréstimo e situação na biblioteca</p>
+                        </div>
+                    </header>
+
+                    <div id="perfilView">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="profile-card">
+                                    <span class="profile-avatar" id="perfilAvatar">?</span>
+                                    <div class="profile-card-body">
+                                        <h3 id="perfilNome">—</h3>
+                                        <p class="profile-meta" id="perfilEmail">—</p>
+                                        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap" id="perfilBadges"></div>
+                                    </div>
+                                </div>
+                                <dl class="info-list">
+                                    <div class="info-item"><dt>Prontuário</dt><dd id="perfilProntuario">-</dd></div>
+                                    <div class="info-item"><dt>Curso</dt><dd id="perfilCurso">-</dd></div>
+                                    <div class="info-item"><dt>Telefone</dt><dd id="perfilTelefone">-</dd></div>
+                                    <div class="info-item"><dt>Endereço</dt><dd id="perfilEndereco">-</dd></div>
+                                    <div class="info-item"><dt>Categoria</dt><dd id="perfilCategoria">-</dd></div>
+                                    <div class="info-item"><dt>Limite de Empréstimos</dt><dd id="perfilLimite">-</dd></div>
+                                    <div class="info-item"><dt>Prazo de Devolução</dt><dd id="perfilPrazo">-</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <span class="index-tab">Editar dados</span>
+                            <div class="card-body">
+                                <form id="perfilForm">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="perfilNomeInput">Nome</label>
+                                            <input type="text" id="perfilNomeInput" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="perfilEmailInput">E-mail</label>
+                                            <input type="email" id="perfilEmailInput" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="perfilTelefoneInput">Telefone</label>
+                                            <input type="text" id="perfilTelefoneInput" placeholder="(11) 99999-0000">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="perfilCursoInput">Curso</label>
+                                            <input type="text" id="perfilCursoInput">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="perfilEnderecoInput">Endereço</label>
+                                            <input type="text" id="perfilEnderecoInput">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg> Salvar Alterações
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/meu-perfil.js"></script>
+</body>
+</html>

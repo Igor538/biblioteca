@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <span>Dashboard</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Panorama</p>
+                            <h1>Dashboard</h1>
+                            <p id="pageHeadDescricao">Visão geral do acervo e da circulação da biblioteca</p>
+                        </div>
+                        <div class="page-head-actions" id="pageHeadActions">
+                            <a href="/relatorios" class="btn btn-secondary">
+                                <svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg> Relatórios
+                            </a>
+                            <a href="/emprestimos" class="btn btn-primary">
+                                <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg> Novo Empréstimo
+                            </a>
+                        </div>
+                    </header>
+
+                    <div id="areaStaff">
+                    <div class="alert-banner alert-banner-warning" id="alertaAtrasados" style="display:none">
+                        <svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg>
+                        <span id="alertaAtrasadosText"></span>
+                    </div>
+
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-card stat-blue">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg></span>
+                            <span class="stat-label">Total de Livros</span>
+                            <span class="stat-number" id="totalLivros">—</span>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg></span>
+                            <span class="stat-label">Total de Usuários</span>
+                            <span class="stat-number" id="totalUsuarios">—</span>
+                        </div>
+                        <div class="stat-card stat-orange">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg></span>
+                            <span class="stat-label">Empréstimos Ativos</span>
+                            <span class="stat-number" id="emprestimosAtivos">—</span>
+                        </div>
+                        <div class="stat-card stat-red">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+                            <span class="stat-label">Livros Atrasados</span>
+                            <span class="stat-number" id="livrosAtrasados">—</span>
+                        </div>
+                        <div class="stat-card stat-orange">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg></span>
+                            <span class="stat-label">Reservas Ativas</span>
+                            <span class="stat-number" id="reservasAtivas">—</span>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-return"></use></svg></span>
+                            <span class="stat-label">Devoluções Realizadas</span>
+                            <span class="stat-number" id="devolucoesRealizadas">—</span>
+                        </div>
+                        <div class="stat-card stat-green">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                            <span class="stat-label">Livros Disponíveis</span>
+                            <span class="stat-number" id="livrosDisponiveis">—</span>
+                        </div>
+                        <div class="stat-card stat-red">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+                            <span class="stat-label">Livros Indisponíveis</span>
+                            <span class="stat-number" id="livrosIndisponiveis">—</span>
+                        </div>
+                        <div class="stat-card stat-red">
+                            <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-user"></use></svg></span>
+                            <span class="stat-label">Usuários Suspensos</span>
+                            <span class="stat-number" id="usuariosSuspensos">—</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-card chart-grid-full">
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg> Empréstimos por Mês (6 meses)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="chartEmprestimosMes"></div>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg> Livros Mais Emprestados</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="chartLivrosTop"></div>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-tag"></use></svg> Acervo por Categoria</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="chartAcervo"></div>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg> Empréstimos por Categoria de Usuário</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="chartEmprestimosCategoria"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid">
+                        <div class="card">
+                            <span class="index-tab">Histórico</span>
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-history"></use></svg> Últimos Empréstimos</h3>
+                                <a href="/historico" class="btn btn-sm btn-secondary">Ver tudo</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="tabelaEmprestimos">
+                                        <thead>
+                                            <tr>
+                                                <th>Usuário</th>
+                                                <th>Livro</th>
+                                                <th>Data Empréstimo</th>
+                                                <th>Previsão</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="emprestimosBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <span class="index-tab">Relatório Rápido</span>
+                            <div class="card-header">
+                                <h3><svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg> Livros em Atraso</h3>
+                                <a href="/relatorios" class="btn btn-sm btn-secondary">Relatórios</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table" id="tabelaAtrasados">
+                                        <thead>
+                                            <tr>
+                                                <th>Livro</th>
+                                                <th>Usuário</th>
+                                                <th>Atraso</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="atrasadosBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div id="areaLeitor" style="display:none">
+                        <div class="alert-banner alert-banner-warning" id="alertaAtrasadosLeitor" style="display:none">
+                            <svg class="ic" aria-hidden="true"><use href="#i-alert"></use></svg>
+                            <span id="alertaAtrasadosLeitorText"></span>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card stat-blue">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg></span>
+                                <span class="stat-label">Meus Empréstimos Ativos</span>
+                                <span class="stat-number" id="leitorEmprestimosAtivos">—</span>
+                            </div>
+                            <div class="stat-card stat-orange">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg></span>
+                                <span class="stat-label">Minhas Reservas</span>
+                                <span class="stat-number" id="leitorReservas">—</span>
+                            </div>
+                            <div class="stat-card stat-red">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg></span>
+                                <span class="stat-label">Livros em Atraso</span>
+                                <span class="stat-number" id="leitorAtrasados">—</span>
+                            </div>
+                            <div class="stat-card stat-green">
+                                <span class="stat-icon"><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg></span>
+                                <span class="stat-label">Notificações não lidas</span>
+                                <span class="stat-number" id="leitorNotificacoes">—</span>
+                            </div>
+                        </div>
+
+                        <div class="dash-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg> Meus Empréstimos Ativos</h3>
+                                    <a href="/historico" class="btn btn-sm btn-secondary">Ver tudo</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Livro</th>
+                                                    <th>Data Empréstimo</th>
+                                                    <th>Devolução Prevista</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leitorEmprestimosBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg> Minhas Reservas</h3>
+                                    <a href="/reservas" class="btn btn-sm btn-secondary">Ver tudo</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Livro</th>
+                                                    <th>Data da Reserva</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leitorReservasBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,65 +1,205 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-    const form = document.getElementById("loginForm");
+    const formulario = document.querySelector("#loginForm");
+    const mensagem = document.querySelector("#mensagem");
 
-    const email = document.getElementById("email");
+    if (!formulario) {
+        console.error("Formulário de login não encontrado.");
+        return;
+    }
 
-    const senha = document.getElementById("senha");
+    formulario.addEventListener("submit", async (evento) => {
 
-    const mensagem = document.getElementById("mensagem");
+        evento.preventDefault();
 
+        // ----------------------------------------------------
+        // LIMPAR MENSAGEM
+        // ----------------------------------------------------
 
-    form.addEventListener("submit", async function (event) {
+        if (mensagem) {
+            mensagem.textContent = "";
+            mensagem.className = "";
+        }
 
-        event.preventDefault();
+        // ----------------------------------------------------
+        // PEGAR DADOS DO FORMULÁRIO
+        // ----------------------------------------------------
 
-        mensagem.textContent = "";
+        const dados = new FormData(formulario);
 
-        mensagem.className = "";
+        const email = dados.get("email");
+        const senha = dados.get("senha");
 
+        // ----------------------------------------------------
+        // VALIDAÇÃO NO FRONTEND
+        // ----------------------------------------------------
 
-        const dados = new FormData();
+        if (!email || !email.trim()) {
 
-        dados.append("email", email.value.trim());
+            mostrarMensagem(
+                "Informe o e-mail.",
+                "mensagem-erro"
+            );
 
-        dados.append("senha", senha.value);
+            return;
+        }
 
+        if (!senha) {
+
+            mostrarMensagem(
+                "Informe a senha.",
+                "mensagem-erro"
+            );
+
+            return;
+        }
+
+        // ----------------------------------------------------
+        // DESABILITAR BOTÃO
+        // ----------------------------------------------------
+
+        const botao = formulario.querySelector(
+            'button[type="submit"]'
+        );
+
+        if (botao) {
+            botao.disabled = true;
+        }
 
         try {
+
+            // ------------------------------------------------
+            // ENVIAR LOGIN PARA O FLASK
+            // ------------------------------------------------
 
             const resposta = await fetch("/login", {
                 method: "POST",
                 body: dados
             });
 
+            // ------------------------------------------------
+            // CONVERTER RESPOSTA PARA JSON
+            // ------------------------------------------------
 
-            const resultado = await resposta.json();
+            let resultado = null;
 
+            try {
+                resultado = await resposta.json();
+            } catch (e) {
+                resultado = null;
+            }
 
-            mensagem.textContent = resultado.mensagem;
+            // ------------------------------------------------
+            // VERIFICAR RESPOSTA HTTP
+            // ------------------------------------------------
 
+            if (!resposta.ok) {
+
+                mostrarMensagem(
+                    (resultado && resultado.mensagem)
+                        ? resultado.mensagem
+                        : `Erro HTTP: ${resposta.status}`,
+                    "mensagem-erro"
+                );
+
+                return;
+            }
+
+            if (!resultado) {
+                throw new Error("Resposta inválida do servidor.");
+            }
+
+            // ------------------------------------------------
+            // LOGIN CORRETO
+            // ------------------------------------------------
 
             if (resultado.sucesso) {
 
-                mensagem.className = "mensagem-sucesso";
+                mostrarMensagem(
+                    resultado.mensagem,
+                    "mensagem-sucesso"
+                );
 
-            } else {
+                /*
+                 * IMPORTANTE:
+                 *
+                 * Depois do login o usuário vai para:
+                 *
+                 * /sistema
+                 *
+                 * Essa rota existe no app.py.
+                 */
 
-                mensagem.className = "mensagem-erro";
+                if (resultado.usuario) {
+                    localStorage.setItem("biblioteca_usuario", JSON.stringify(resultado.usuario));
+                }
+
+                setTimeout(() => {
+                    window.location.href = "/sistema";
+                }, 300);
 
             }
 
+            // ------------------------------------------------
+            // LOGIN INCORRETO
+            // ------------------------------------------------
 
-        } catch (erro) {
+            else {
 
-            mensagem.textContent = "Erro ao realizar o login.";
+                mostrarMensagem(
+                    resultado.mensagem,
+                    "mensagem-erro"
+                );
 
-            mensagem.className = "mensagem-erro";
+            }
 
-            console.error(erro);
+        }
+
+        // ----------------------------------------------------
+        // ERRO DE COMUNICAÇÃO
+        // ----------------------------------------------------
+
+        catch (erro) {
+
+            console.error(
+                "Erro ao realizar login:",
+                erro
+            );
+
+            mostrarMensagem(
+                "Erro ao realizar o login. Verifique se o servidor está funcionando.",
+                "mensagem-erro"
+            );
+
+        }
+
+        // ----------------------------------------------------
+        // REATIVAR BOTÃO
+        // ----------------------------------------------------
+
+        finally {
+
+            if (botao) {
+                botao.disabled = false;
+            }
 
         }
 
     });
+
+
+    // ========================================================
+    // FUNÇÃO PARA MOSTRAR MENSAGEM
+    // ========================================================
+
+    function mostrarMensagem(texto, classe) {
+
+        if (!mensagem) {
+            return;
+        }
+
+        mensagem.textContent = texto;
+        mensagem.className = classe;
+    }
 
 });

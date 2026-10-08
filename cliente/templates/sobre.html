@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre o Sistema — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Sobre o Sistema</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Institucional</p>
+                            <h1>Sobre o Sistema</h1>
+                            <p>O Pergamum da Biblioteca</p>
+                        </div>
+                    </header>
+
+                    <div class="card">
+                        <span class="index-tab">Sobre</span>
+                        <div class="card-body">
+                            <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-bottom:22px">
+                                <span class="sidebar-logo" style="width:72px;height:72px;flex-shrink:0">
+                                    <svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg>
+                                </span>
+                                <div style="flex:1;min-width:240px">
+                                    <h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:6px">Sistema de Gerenciamento de Biblioteca</h2>
+                                    <p style="color:var(--ink-soft);line-height:1.6">
+                                        Plataforma web para gestão do acervo, empréstimos, reservas e serviços da
+                                        Biblioteca do Instituto Federal de São Paulo — .
+                                    </p>
+                                </div>
+                            </div>
+
+                            <h3 style="margin:24px 0 12px;font-size:1.05rem">Funcionalidades</h3>
+                            <ul class="sobre-lista">
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg> Consulta ao acervo por título, autor, ISBN, assunto e editora</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-loan"></use></svg> Empréstimos e renovações com regras automáticas por categoria</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-return"></use></svg> Devoluções com cálculo automático de atraso e suspensão</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg> Reservas de obras indisponíveis com fila de espera</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg> Notificações de prazos, renovações e reservas disponíveis</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-service"></use></svg> Serviços ao usuário: declaração, ficha catalográfica e sugestões</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-chart"></use></svg> Relatórios de circulação, atrasos e estatísticas do acervo</li>
+                                <li><svg class="ic" aria-hidden="true"><use href="#i-audit"></use></svg> Auditoria de operações e backup do banco de dados</li>
+                            </ul>
+
+                            <h3 style="margin:24px 0 12px;font-size:1.05rem">Regras de empréstimo</h3>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Limite de livros</th>
+                                            <th>Prazo (dias)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sobreRegrasBody">
+                                        <tr><td colspan="3" class="empty-table">Carregando regras...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="index-tab">Institucional</span>
+                        <div class="card-body">
+                            <dl class="info-list">
+                                <div class="info-item"><dt>Instituição</dt><dd>Instituto Federal de Educação, Ciência e Tecnologia de São Paulo</dd></div>
+                                <div class="info-item"><dt>Campus</dt><dd> IFSP — CPV</dd></div>
+                                <div class="info-item"><dt>Sistema</dt><dd>Gestão de Biblioteca (Pergamum)</dd></div>
+                                <div class="info-item"><dt>Tecnologias</dt><dd>Flask (Python), SQLite, HTML, CSS e JavaScript</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/sobre.js"></script>
+</body>
+</html>

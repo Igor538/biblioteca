@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários — Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo"><svg class="ic" aria-hidden="true"><use href="#i-book-open"></use></svg></span>
+                <span class="sidebar-brand-text">
+                    <span class="sidebar-brand-name">Biblioteca</span>
+                    <span class="sidebar-brand-sub"></span>
+                </span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal"></nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <span class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">?</span>
+                    <div class="sidebar-user-text" id="sidebarUserInfo"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" title="Abrir menu" aria-label="Abrir menu" aria-expanded="false">
+                        <svg class="ic" aria-hidden="true"><use href="#i-menu"></use></svg>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Trilha de navegação">
+                        <a href="/sistema">Início</a>
+                        <span class="crumb-sep" aria-hidden="true">/</span>
+                        <span>Usuários</span>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="darkModeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">
+                        <svg class="ic" aria-hidden="true"><use href="#i-lamp-off"></use></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="page-container">
+                    <header class="page-head">
+                        <div class="page-head-text">
+                            <p class="page-kicker">Leitores</p>
+                            <h1>Usuários</h1>
+                            <p>Cadastro e gerenciamento de usuários com regras por categoria</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button class="btn btn-primary" id="btnNovoUsuario">
+                                <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg> Novo Usuário
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="filters">
+                        <div class="form-group">
+                            <input type="text" id="searchUsuario" placeholder="Buscar por nome, e-mail ou prontuário...">
+                        </div>
+                        <div class="form-group">
+                            <select id="filtroCategoria">
+                                <option value="">Todas as categorias</option>
+                                <option value="Servidor">Servidor</option>
+                                <option value="Discente Regular">Discente Regular</option>
+                                <option value="Discente FIC">Discente FIC</option>
+                                <option value="Terceirizado">Terceirizado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="filtroStatus">
+                                <option value="">Todos os status</option>
+                                <option value="Ativo">Ativo</option>
+                                <option value="Suspenso">Suspenso</option>
+                                <option value="Inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert-banner alert-banner-info">
+                        <svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg>
+                        <span>Regras de empréstimo: <strong>Servidor</strong> até 8 livros / 21 dias · <strong>Discente Regular</strong> até 6 / 7 dias · <strong>Discente FIC</strong> até 2 / 7 dias · <strong>Terceirizado</strong> até 2 / 7 dias.</span>
+                    </div>
+
+                    <div class="table-count" id="usuariosContagem"></div>
+
+                    <div class="card">
+                        <span class="index-tab">Registro</span>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table" id="tabelaUsuarios">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Prontuário</th>
+                                            <th>Email</th>
+                                            <th>Categoria</th>
+                                            <th>Empréstimos</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usuariosBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="usuariosPaginacao"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="usuarioModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg> <span id="modalTitleUsuario">Novo Usuário</span></h3>
+                <button class="modal-close" aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            </div>
+            <form id="usuarioForm">
+                <input type="hidden" id="usuarioId">
+                <div class="modal-body">
+                    <p class="page-kicker">Dados Pessoais</p>
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="nome">Nome Completo *</label>
+                            <input type="text" id="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone">Telefone</label>
+                            <input type="text" id="telefone" placeholder="(11) 99999-0000">
+                        </div>
+                        <div class="form-group full">
+                            <label for="endereco">Endereço</label>
+                            <input type="text" id="endereco">
+                        </div>
+                    </div>
+
+                    <p class="page-kicker" style="margin-top:20px">Dados Institucionais</p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="prontuario">Número de Prontuário (CV)</label>
+                            <input type="text" id="prontuario" placeholder="CV0000000">
+                        </div>
+                        <div class="form-group">
+                            <label for="curso">Curso</label>
+                            <input type="text" id="curso">
+                        </div>
+                        <div class="form-group">
+                            <label for="ano_ingresso">Ano de Ingresso</label>
+                            <input type="number" id="ano_ingresso" min="1900" max="2100">
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo_usuario">Categoria *</label>
+                            <select id="tipo_usuario" required>
+                                <option value="Servidor">Servidor — 8 livros · 21 dias</option>
+                                <option value="Discente Regular">Discente Regular — 6 livros · 7 dias</option>
+                                <option value="Discente FIC">Discente FIC — 2 livros · 7 dias</option>
+                                <option value="Terceirizado">Terceirizado — 2 livros · 7 dias</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfil">Perfil</label>
+                            <select id="perfil">
+                                <option value="Usuário">Usuário</option>
+                                <option value="Bibliotecário">Bibliotecário</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status">
+                                <option value="Ativo">Ativo</option>
+                                <option value="Suspenso">Suspenso</option>
+                                <option value="Inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/usuarios.js"></script>
+</body>
+</html>
