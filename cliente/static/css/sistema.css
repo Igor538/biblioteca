@@ -626,6 +626,51 @@ h1, h2, h3, h4 {
 }
 
 /* ------------------------------------------------------------
+   ÍCONE DE MODO (modos.jpg) — 2 estados (claro/escuro)
+   ------------------------------------------------------------ */
+.mode-icon {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+}
+
+.mode-icon::before,
+.mode-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    transition: opacity 0.22s ease;
+}
+
+.mode-icon::before {
+    -webkit-mask-image: url('../img/modo-1.png');
+    mask-image: url('../img/modo-1.png');
+    opacity: 1;
+}
+
+.mode-icon::after {
+    -webkit-mask-image: url('../img/modo-2.png');
+    mask-image: url('../img/modo-2.png');
+    opacity: 0;
+}
+
+.mode-icon.is-dark::before {
+    opacity: 0;
+}
+
+.mode-icon.is-dark::after {
+    opacity: 1;
+}
+
+/* ------------------------------------------------------------
    CONTENT & PAGE HEAD
    ------------------------------------------------------------ */
 .content {

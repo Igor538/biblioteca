@@ -193,8 +193,10 @@ function carregarContagemNotificacoes() {
 function aplicarModoEscuro() {
     const ativo = localStorage.getItem('darkMode') === 'true';
     document.body.classList.toggle('dark-mode', ativo);
-    const icon = document.querySelector('#darkModeToggle .ic use');
-    if (icon) icon.setAttribute('href', ativo ? '#i-lamp' : '#i-lamp-off');
+    const icon = document.querySelector('#darkModeToggle .mode-icon');
+    if (icon) {
+        icon.classList.toggle('is-dark', ativo);
+    }
 }
 
 function setupModoEscuro() {
@@ -203,8 +205,8 @@ function setupModoEscuro() {
     toggle.addEventListener('click', function () {
         const ativo = document.body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', ativo);
-        const icon = this.querySelector('.ic use');
-        if (icon) icon.setAttribute('href', ativo ? '#i-lamp' : '#i-lamp-off');
+        const icon = document.querySelector('#darkModeToggle .mode-icon');
+        if (icon) icon.classList.toggle('is-dark', ativo);
     });
 }
 
