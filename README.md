@@ -47,7 +47,7 @@ Novas contas criadas pelo cadastro público entram como **Leitor**.
 ## 🗂️ Estrutura
 
 ```
-bibliotecas/
+biblioteca/
 ├── banco/           # esquema SQL e banco SQLite
 ├── cliente/         # templates HTML e arquivos estáticos
 └── servidor/        # aplicação Flask, rotas e modelos
