@@ -1,7 +1,7 @@
 """Modelos CRUD e regras de negócio do sistema de biblioteca."""
 
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from database import query, query_one, execute, execute_insert, transacao, _executar
 from werkzeug.security import generate_password_hash
 import validators as vd
@@ -295,6 +295,16 @@ class Usuario:
         return True
 
     @staticmethod
+    def alterar_senha(id, senha):
+        """Define uma nova senha (com hash) para o usuário informado."""
+        hash_senha = _preparar_senha(senha)
+        if not hash_senha:
+            raise ValueError("A nova senha é obrigatória.")
+        execute(f"UPDATE {Usuario.TABLE} SET senha = ? WHERE id = ?", [hash_senha, id])
+        Auditoria.registrar("Alteração de senha", {"usuario_id": id})
+        return True
+
+    @staticmethod
     def excluir(id):
         ativos = query_one(
             "SELECT COUNT(*) AS total FROM emprestimos WHERE usuario_id = ? AND status = 'Emprestado'",
@@ -483,7 +493,7 @@ class Emprestimo:
                        e.data_emprestimo, e.data_prevista_devolucao, e.data_devolucao,
                        e.renovacoes, e.status,
                        (CASE WHEN e.status = 'Emprestado' AND e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -696,7 +706,7 @@ class Emprestimo:
                        e.data_emprestimo, e.data_prevista_devolucao, e.data_devolucao,
                        e.renovacoes, e.status,
                        (CASE WHEN e.data_devolucao IS NOT NULL AND e.data_devolucao > e.data_prevista_devolucao
-                             THEN CAST(julianday(e.data_devolucao) - julianday(e.data_prevista_devolucao) AS INTEGER) ELSE 0 END) AS dias_atraso
+                             THEN (e.data_devolucao - e.data_prevista_devolucao) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -708,7 +718,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, l.titulo AS livro_titulo, l.isbn AS livro_isbn,
                        (CASE WHEN e.data_devolucao IS NOT NULL AND e.data_devolucao > e.data_prevista_devolucao
-                             THEN CAST(julianday(e.data_devolucao) - julianday(e.data_prevista_devolucao) AS INTEGER) ELSE 0 END) AS dias_atraso
+                             THEN (e.data_devolucao - e.data_prevista_devolucao) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN livros l ON e.livro_id = l.id
                 WHERE e.usuario_id = ?
@@ -719,7 +729,7 @@ class Emprestimo:
     @staticmethod
     def renovacoes_do_emprestimo(emprestimo_id):
         return query(
-            f"SELECT * FROM renovacoes WHERE emprestimo_id = ? ORDER BY data_renovacao DESC",
+            "SELECT * FROM renovacoes WHERE emprestimo_id = ? ORDER BY data_renovacao DESC",
             [emprestimo_id]
         )
 
@@ -758,7 +768,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, u.nome AS usuario_nome, l.titulo AS livro_titulo,
                        (CASE WHEN e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -771,7 +781,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, u.nome AS usuario_nome, l.titulo AS livro_titulo,
                        (CASE WHEN e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -1012,3 +1022,58 @@ class Sessao:
     @staticmethod
     def encerrar(token):
         return execute(f"DELETE FROM {Sessao.TABLE} WHERE token = ?", [token])
+
+
+# ============================================================
+# RECUPERAÇÃO DE SENHA (tokens de redefinição)
+# ============================================================
+class TokenRecuperacao:
+    TABLE = "tokens_recuperacao"
+    EXPIRACAO_HORAS = 1
+
+    @staticmethod
+    def criar(usuario_id, token, data_expiracao):
+        # Invalida links anteriores ainda nao usados deste usuario
+        execute(
+            f"DELETE FROM {TokenRecuperacao.TABLE} WHERE usuario_id = ? AND usado = FALSE",
+            [usuario_id]
+        )
+        execute(
+            f"INSERT INTO {TokenRecuperacao.TABLE} (token, usuario_id, data_expiracao, usado) VALUES (?, ?, ?, FALSE)",
+            [token, usuario_id, data_expiracao]
+        )
+        return token
+
+    @staticmethod
+    def buscar_valido(token):
+        token_rec = query_one(
+            f"SELECT * FROM {TokenRecuperacao.TABLE} WHERE token = ? AND usado = FALSE",
+            [token]
+        )
+        if not token_rec:
+            return None
+        expiracao = token_rec.get("data_expiracao")
+        if expiracao:
+            if isinstance(expiracao, str):
+                try:
+                    expiracao = datetime.fromisoformat(expiracao)
+                except ValueError:
+                    return None
+            if expiracao < datetime.now():
+                TokenRecuperacao.remover(token)
+                return None
+        return token_rec
+
+    @staticmethod
+    def marcar_usado(token):
+        execute(
+            f"UPDATE {TokenRecuperacao.TABLE} SET usado = TRUE WHERE token = ?",
+            [token]
+        )
+
+    @staticmethod
+    def remover(token):
+        execute(
+            f"DELETE FROM {TokenRecuperacao.TABLE} WHERE token = ?",
+            [token]
+        )

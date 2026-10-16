@@ -225,3 +225,19 @@ body {
         height: 250px;
     }
 }
+/* Botao esqueceu senha */
+#btnEsqueceuSenha {
+    width: auto;
+    margin: 0 0 10px 0;
+    padding: 6px 10px;
+    background: transparent;
+    color: #3498db;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: underline;
+    text-align: left;
+}
+#btnEsqueceuSenha:hover {
+    background: transparent;
+    color: #2980b9;
+}

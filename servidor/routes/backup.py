@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify
 from database import query
 from auth import requer_perfil
-import json
 
 backup_bp = Blueprint("backup", __name__)
 

@@ -2,7 +2,7 @@
 name = "biblioteca"
 version = "1.0.0"
 requires-python = ">=3.11"
-dependencies = ["Flask>=3.0", "Werkzeug>=3.0"]
+dependencies = ["Flask>=3.0", "Werkzeug>=3.0", "psycopg[binary]>=3.1"]
 
 [tool.vercel]
 entrypoint = "servidor.app:app"
