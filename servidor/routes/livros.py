@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models import Livro
-from auth import requer_autenticacao, requer_perfil
+from auth import requer_perfil
 from . import erro_interno
 
 livros_bp = Blueprint("livros", __name__)

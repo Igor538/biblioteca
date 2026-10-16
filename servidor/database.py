@@ -1,38 +1,33 @@
 import os
+import queue
+import threading
 from pathlib import Path
+
+
 def _load_env():
-    p=Path(__file__).resolve().parent.parent / '.env'
+    p = Path(__file__).resolve().parent.parent / '.env'
     if p.exists():
         for line in p.read_text().splitlines():
-            line=line.strip()
+            line = line.strip()
             if line and not line.startswith('#') and '=' in line:
-                k,v=line.split('=',1)
+                k, v = line.split('=', 1)
                 os.environ.setdefault(k.strip(), v.strip())
+
+
 _load_env()
-import os
+
 import psycopg
-from psycopg.rows import dict_row
 from contextlib import contextmanager
-from pathlib import Path
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-ESQUEMA = BASE_DIR / "banco" / "esquema.sql"
-
-# Na Vercel o disco é somente leitura (exceto /tmp)
-BANCO_DIR = Path("/tmp") if os.environ.get("VERCEL") else BASE_DIR / "banco"
-BANCO_DIR.mkdir(exist_ok=True)
-
-DATABASE = BANCO_DIR / "biblioteca.db"
-
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
 
 class FlexRow(dict):
     def __getitem__(self, key):
         if isinstance(key, int):
             return list(self.values())[key]
         return super().__getitem__(key)
+
 
 def _flex_row(cursor):
     def make_row(values):
@@ -41,14 +36,68 @@ def _flex_row(cursor):
         return FlexRow({desc.name: val for desc, val in zip(cursor.description, values)})
     return make_row
 
+
+# ------------------------------------------------------------
+# POOL DE CONEXOES
+#
+# Abrir uma conexao no Neon custa ~1s. Antes, cada consulta abria e
+# fechava uma conexao nova. Agora as conexoes sao reaproveitadas em um
+# pool: "close()" apenas devolve a conexao para o pool.
+# ------------------------------------------------------------
+
+_pool = queue.LifoQueue()
+_PERMISSOES = threading.Semaphore(int(os.environ.get("DB_POOL_SIZE", "5")))
+
+
+class _ConexaoPool:
+    def __init__(self, conexao):
+        self._conexao = conexao
+        self._liberada = False
+
+    def __getattr__(self, nome):
+        return getattr(self._conexao, nome)
+
+    @property
+    def closed(self):
+        return self._conexao.closed
+
+    def close(self):
+        if self._liberada:
+            return
+        self._liberada = True
+        if self._conexao.closed:
+            _PERMISSOES.release()
+            return
+        _pool.put_nowait(self)
+        _PERMISSOES.release()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, tipo, valor, traceback):
+        return self._conexao.__exit__(tipo, valor, traceback)
+
+
+def _nova_conexao():
+    return psycopg.connect(DATABASE_URL, row_factory=_flex_row, autocommit=True)
+
+
 def conectar():
     if not DATABASE_URL:
         raise RuntimeError("Defina DATABASE_URL.")
-    return psycopg.connect(DATABASE_URL, row_factory=_flex_row)
+    _PERMISSOES.acquire()
+    try:
+        conexao = _pool.get_nowait()
+        if conexao.closed:
+            conexao = _ConexaoPool(_nova_conexao())
+    except queue.Empty:
+        conexao = _ConexaoPool(_nova_conexao())
+    conexao._liberada = False
+    return conexao
 
 
 # ------------------------------------------------------------
-# HELPERS GENÉRICOS (usados por models.py e routes/*)
+# HELPERS GENERICOS (usados por models.py e routes/*)
 # ------------------------------------------------------------
 
 def _linha(linha):
@@ -77,7 +126,6 @@ def execute(sql, params=None):
     conexao = conectar()
     try:
         conexao.execute(sql.replace("?", "%s"), params or [])
-        conexao.commit()
     finally:
         conexao.close()
 
@@ -88,9 +136,7 @@ def execute_insert(sql, params=None):
         cursor = conexao.execute(sql.replace("?", "%s"), params or [])
         if "RETURNING" in sql.upper():
             linha = cursor.fetchone()
-            conexao.commit()
             return list(linha.values())[0] if linha else None
-        conexao.commit()
         return cursor.lastrowid
     finally:
         conexao.close()
@@ -103,96 +149,92 @@ def _executar(conexao, sql, params=None):
 @contextmanager
 def transacao():
     conexao = conectar()
+    real = conexao._conexao
+    real.autocommit = False
     try:
         yield conexao
-        conexao.commit()
+        real.commit()
     except Exception:
-        conexao.rollback()
+        real.rollback()
         raise
     finally:
+        try:
+            real.autocommit = True
+        except Exception:
+            pass
         conexao.close()
 
 
-def criar_tabela_usuarios():
-    pass
+TOKEN_TABELA_SQL = """
+CREATE TABLE IF NOT EXISTS tokens_recuperacao (
+    token VARCHAR(64) PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    data_expiracao TIMESTAMP NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_tokens_recuperacao_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+)
+"""
+
 
 def inicializar_banco():
-    from pathlib import Path
     esquema = Path(__file__).resolve().parent.parent / 'banco' / 'esquema_postgres.sql'
     try:
-        with conectar() as c:
-            existe = c.execute("SELECT to_regclass('public.usuarios')").fetchone()
-            if existe and list(existe.values())[0] is not None:
-                return
-            c.execute(esquema.read_text(encoding='utf-8-sig'))
-            c.commit()
+        conexao = conectar()
+        try:
+            existe = conexao.execute("SELECT to_regclass('public.usuarios')").fetchone()
+            if not (existe and list(existe.values())[0] is not None):
+                conexao.execute(esquema.read_text(encoding='utf-8-sig'))
+            conexao.execute(TOKEN_TABELA_SQL)
+        finally:
+            conexao.close()
     except Exception:
-        with conectar() as c:
-            c.execute(esquema.read_text(encoding='utf-8-sig'))
-            c.commit()
+        conexao = conectar()
+        try:
+            conexao.execute(esquema.read_text(encoding='utf-8-sig'))
+        finally:
+            conexao.close()
 
 
 def buscar_usuario_por_id(usuario_id):
     conexao = conectar()
-
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE id = %s
-        """,
-        (usuario_id,)
-    ).fetchone()
-
-    conexao.close()
-
-    return usuario
+    try:
+        return conexao.execute(
+            "SELECT * FROM usuarios WHERE id = %s",
+            (usuario_id,)
+        ).fetchone()
+    finally:
+        conexao.close()
 
 
 def dados_dashboard():
     conexao = conectar()
-
     try:
-        total_livros = conexao.execute(
-            "SELECT COUNT(*) FROM livros"
-        ).fetchone()[0]
-
-        total_usuarios = conexao.execute(
-            "SELECT COUNT(*) FROM usuarios"
-        ).fetchone()[0]
-
-        emprestimos_ativos = conexao.execute(
-            "SELECT COUNT(*) FROM emprestimos WHERE status = 'Emprestado'"
-        ).fetchone()[0]
-
-        livros_atrasados = conexao.execute(
+        totais = conexao.execute(
             """
-            SELECT COUNT(*)
-            FROM emprestimos
-            WHERE status = 'Emprestado'
-              AND data_prevista_devolucao::date < CURRENT_DATE
+            SELECT
+                (SELECT COUNT(*) FROM livros) AS total_livros,
+                (SELECT COUNT(*) FROM usuarios) AS total_usuarios,
+                (SELECT COUNT(*) FROM emprestimos WHERE status = 'Emprestado') AS emprestimos_ativos,
+                (SELECT COUNT(*) FROM emprestimos
+                  WHERE status = 'Emprestado'
+                    AND data_prevista_devolucao::date < CURRENT_DATE) AS livros_atrasados,
+                (SELECT COUNT(*) FROM reservas WHERE status = 'Ativa') AS reservas_ativas,
+                (SELECT COUNT(*) FROM emprestimos WHERE status = 'Devolvido') AS devolucoes_realizadas,
+                (SELECT COALESCE(SUM(disponivel), 0) FROM livros) AS livros_disponiveis,
+                (SELECT COUNT(*) FROM livros WHERE disponivel <= 0) AS livros_indisponiveis,
+                (SELECT COUNT(*) FROM usuarios WHERE status = 'Suspenso') AS usuarios_suspensos
             """
-        ).fetchone()[0]
+        ).fetchone()
 
-        reservas_ativas = conexao.execute(
-            "SELECT COUNT(*) FROM reservas WHERE status = 'Ativa'"
-        ).fetchone()[0]
-
-        devolucoes_realizadas = conexao.execute(
-            "SELECT COUNT(*) FROM emprestimos WHERE status = 'Devolvido'"
-        ).fetchone()[0]
-
-        livros_disponiveis = conexao.execute(
-            "SELECT COALESCE(SUM(disponivel), 0) FROM livros"
-        ).fetchone()[0]
-
-        livros_indisponiveis = conexao.execute(
-            "SELECT COUNT(*) FROM livros WHERE disponivel <= 0"
-        ).fetchone()[0]
-
-        usuarios_suspensos = conexao.execute(
-            "SELECT COUNT(*) FROM usuarios WHERE status = 'Suspenso'"
-        ).fetchone()[0]
+        total_livros = totais["total_livros"]
+        total_usuarios = totais["total_usuarios"]
+        emprestimos_ativos = totais["emprestimos_ativos"]
+        livros_atrasados = totais["livros_atrasados"]
+        reservas_ativas = totais["reservas_ativas"]
+        devolucoes_realizadas = totais["devolucoes_realizadas"]
+        livros_disponiveis = totais["livros_disponiveis"]
+        livros_indisponiveis = totais["livros_indisponiveis"]
+        usuarios_suspensos = totais["usuarios_suspensos"]
 
         emprestimos_mes = [
             {"mes": linha[0], "total": linha[1]}
@@ -310,53 +352,35 @@ def dados_dashboard():
 
 def buscar_usuario_por_email(email):
     conexao = conectar()
-
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE email = %s
-        """,
-        (email,)
-    ).fetchone()
-
-    conexao.close()
-
-    return usuario
+    try:
+        return conexao.execute(
+            "SELECT * FROM usuarios WHERE email = %s",
+            (email,)
+        ).fetchone()
+    finally:
+        conexao.close()
 
 
 def buscar_usuario_por_cpf(cpf):
     conexao = conectar()
-
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE cpf = %s
-        """,
-        (cpf,)
-    ).fetchone()
-
-    conexao.close()
-
-    return usuario
+    try:
+        return conexao.execute(
+            "SELECT * FROM usuarios WHERE cpf = %s",
+            (cpf,)
+        ).fetchone()
+    finally:
+        conexao.close()
 
 
 def buscar_usuario_por_matricula(matricula):
     conexao = conectar()
-
-    usuario = conexao.execute(
-        """
-        SELECT *
-        FROM usuarios
-        WHERE matricula = %s
-        """,
-        (matricula,)
-    ).fetchone()
-
-    conexao.close()
-
-    return usuario
+    try:
+        return conexao.execute(
+            "SELECT * FROM usuarios WHERE matricula = %s",
+            (matricula,)
+        ).fetchone()
+    finally:
+        conexao.close()
 
 
 def cadastrar_usuario(
@@ -372,36 +396,19 @@ def cadastrar_usuario(
     perfil="Usuário",
 ):
     conexao = conectar()
-
-    conexao.execute(
-        """
-        INSERT INTO usuarios (
-            nome,
-            cpf,
-            data_nascimento,
-            email,
-            telefone,
-            matricula,
-            curso,
-            tipo_usuario,
-            senha,
-            perfil
+    try:
+        conexao.execute(
+            """
+            INSERT INTO usuarios (
+                nome, cpf, data_nascimento, email, telefone,
+                matricula, curso, tipo_usuario, senha, perfil
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                nome, cpf, data_nascimento, email, telefone,
+                matricula, curso, tipo_usuario, senha, perfil
+            )
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """,
-        (
-            nome,
-            cpf,
-            data_nascimento,
-            email,
-            telefone,
-            matricula,
-            curso,
-            tipo_usuario,
-            senha,
-            perfil
-        )
-    )
-
-    conexao.commit()
-    conexao.close()
+    finally:
+        conexao.close()

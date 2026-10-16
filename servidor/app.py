@@ -1,3 +1,4 @@
+import os
 import sys
 from functools import wraps
 from pathlib import Path
@@ -34,7 +35,7 @@ app = Flask(
     static_folder="../cliente/static"
 )
 
-app.secret_key = "biblioteca-chave-secreta-trocar-em-producao"
+app.secret_key = os.environ.get("SECRET_KEY", "biblioteca-chave-secreta-trocar-em-producao")
 
 
 # ============================================================

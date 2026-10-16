@@ -173,6 +173,18 @@ CREATE TABLE sessoes (
 );
 
 
+CREATE TABLE tokens_recuperacao (
+    token VARCHAR(64) PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    data_expiracao TIMESTAMP NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_tokens_recuperacao_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_tokens_recuperacao_usuario ON tokens_recuperacao (usuario_id);
+CREATE INDEX idx_tokens_recuperacao_expiracao ON tokens_recuperacao (data_expiracao);
+
+
 
 
 CREATE INDEX idx_emprestimos_usuario ON emprestimos (usuario_id);

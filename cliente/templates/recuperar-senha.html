@@ -40,10 +40,12 @@
 
         document.getElementById('btnEnviar').addEventListener('click', async () => {
             const email = document.getElementById('email').value.trim();
-            if (!email) { mensagem.textContent = 'Informe o e-mail.'; mensagem.className='mensagem-erro'; return; }
+            mensagem.textContent = '';
+            mensagem.className = '';
+            if (!email) { mensagem.textContent = 'Informe o e-mail.'; mensagem.className = 'mensagem-erro'; return; }
             const r = await fetch('/api/esqueceu-senha', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
             const data = await r.json();
-            mensagem.innerHTML = (data.mensagem || '') + (data.link_redefinicao ? '<br><a href="' + data.link_redefinicao + '">Redefinir senha</a>' : '');
+            mensagem.textContent = data.mensagem || data.erro || 'Erro ao processar a solicitação.';
             mensagem.className = r.ok ? 'mensagem-sucesso' : 'mensagem-erro';
         });
 
@@ -55,6 +57,9 @@
                 const data = await r.json();
                 mensagem.textContent = data.mensagem || data.erro;
                 mensagem.className = r.ok ? 'mensagem-sucesso' : 'mensagem-erro';
+                if (r.ok) {
+                    setTimeout(() => { window.location.href = '/login'; }, 3000);
+                }
             });
         }
     </script>

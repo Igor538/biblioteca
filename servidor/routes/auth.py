@@ -1,6 +1,9 @@
+import os
 from flask import Blueprint, request, jsonify, g
-from models import Usuario, Sessao, Auditoria, Penalidade
-from auth import validar_senha, criar_sessao, obter_usuario_autenticado, requer_autenticacao
+from datetime import datetime, timedelta
+from models import Usuario, Sessao, Auditoria, Penalidade, TokenRecuperacao
+from auth import validar_senha, criar_sessao, obter_usuario_autenticado, requer_autenticacao, gerar_token
+import email_service
 from . import erro_interno
 import time
 from collections import defaultdict
@@ -176,4 +179,54 @@ def esqueceu_senha():
     if not email:
         return jsonify({'erro': 'Informe o e-mail.'}), 400
     usuario = Usuario.buscar_por_email(email)
-    return jsonify({'mensagem': 'Se o e-mail estiver cadastrado, enviaremos instrucoes para redefinir a senha.'}), 200
+    mensagem_padrao = 'Se o e-mail estiver cadastrado, enviaremos instrucoes para redefinir a senha.'
+    if not usuario:
+        return jsonify({'mensagem': mensagem_padrao}), 200
+
+    try:
+        token = TokenRecuperacao.criar(
+            usuario['id'],
+            gerar_token(),
+            datetime.now() + timedelta(hours=TokenRecuperacao.EXPIRACAO_HORAS)
+        )
+        base_url = os.environ.get("APP_BASE_URL") or request.host_url
+        link = f"{base_url.rstrip('/')}/recuperar-senha?token={token}"
+        texto, html = email_service.montar_email_recuperacao(
+            usuario.get('nome'), link, TokenRecuperacao.EXPIRACAO_HORAS
+        )
+        email_service.enviar_email(
+            usuario['email'],
+            "Redefinição de senha - Biblioteca Digital",
+            texto,
+            html
+        )
+
+        resposta = {'mensagem': mensagem_padrao}
+        # O link so aparece na tela se a variavel MOSTRAR_LINK_RECUPERACAO
+        # estiver ativa (uso apenas em desenvolvimento). Desligado por padrao:
+        # o usuario deve receber a mensagem por e-mail.
+        if os.environ.get('MOSTRAR_LINK_RECUPERACAO', '').lower() in ('1', 'true', 'sim'):
+            resposta['link_redefinicao'] = link
+        return jsonify(resposta), 200
+    except Exception as e:
+        return jsonify(erro_interno(e)), 500
+
+
+@auth_bp.route('/api/redefinir-senha', methods=['POST'])
+def redefinir_senha():
+    dados = request.get_json(silent=True) or {}
+    token = (dados.get('token') or '').strip()
+    senha = dados.get('senha') or ""
+    if not token:
+        return jsonify({'erro': 'Token invalido ou expirado.'}), 400
+    if len(senha) < 6:
+        return jsonify({'erro': 'A senha deve ter pelo menos 6 caracteres.'}), 400
+    token_rec = TokenRecuperacao.buscar_valido(token)
+    if not token_rec:
+        return jsonify({'erro': 'Token invalido ou expirado.'}), 400
+    try:
+        Usuario.alterar_senha(token_rec['usuario_id'], senha)
+        TokenRecuperacao.marcar_usado(token)
+    except Exception as e:
+        return jsonify(erro_interno(e)), 500
+    return jsonify({'mensagem': 'Senha redefinida com sucesso! Faca login com a nova senha.'}), 200
