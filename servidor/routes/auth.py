@@ -167,3 +167,13 @@ def atualizar_meus_dados():
         return jsonify({"erro": str(e)}), 400
     except Exception as e:
         return jsonify(erro_interno(e)), 500
+
+@auth_bp.route('/api/esqueceu-senha', methods=['POST'])
+@auth_bp.route('/api/recuperar-senha', methods=['POST'])
+def esqueceu_senha():
+    dados = request.get_json(silent=True) or {}
+    email = (dados.get('email') or '').strip()
+    if not email:
+        return jsonify({'erro': 'Informe o e-mail.'}), 400
+    usuario = Usuario.buscar_por_email(email)
+    return jsonify({'mensagem': 'Se o e-mail estiver cadastrado, enviaremos instrucoes para redefinir a senha.'}), 200

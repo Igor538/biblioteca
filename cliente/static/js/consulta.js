@@ -3,6 +3,7 @@ let paginaConsulta = 1;
 const POR_PAGINA_CONSULTA = 12;
 
 document.addEventListener('DOMContentLoaded', function () {
+        carregarTodos();
         setupBusca();
     setupDetalheModal();
 });
@@ -159,4 +160,36 @@ function setupDetalheModal() {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) fecharModal('detalheConsultaModal');
     });
+}
+
+
+function carregarTodos() {
+    showLoading();
+    const grid = document.getElementById("consultaGrid");
+    if (grid) grid.innerHTML = "";
+    API.get("/api/livros")
+        .then(data => {
+            resultadoBusca = data || [];
+            const contagem = document.getElementById("consultaContagem");
+            if (contagem) contagem.textContent = `${resultadoBusca.length} obra(s)`;
+            renderizarResultados();
+        })
+        .catch(() => {})
+        .finally(() => hideLoading());
+}
+
+
+function carregarTodos() {
+    showLoading();
+    const grid = document.getElementById("consultaGrid");
+    if (grid) grid.innerHTML = "";
+    API.get("/api/livros")
+        .then(data => {
+            resultadoBusca = data || [];
+            const contagem = document.getElementById("consultaContagem");
+            if (contagem) contagem.textContent = `${resultadoBusca.length} obra(s) no acervo`;
+            renderizarResultados();
+        })
+        .catch(() => {})
+        .finally(() => hideLoading());
 }

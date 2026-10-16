@@ -1,5 +1,17 @@
 import os
-import sqlite3
+from pathlib import Path
+def _load_env():
+    p=Path(__file__).resolve().parent.parent / '.env'
+    if p.exists():
+        for line in p.read_text().splitlines():
+            line=line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k,v=line.split('=',1)
+                os.environ.setdefault(k.strip(), v.strip())
+_load_env()
+import os
+import psycopg
+from psycopg.rows import dict_row
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -14,10 +26,25 @@ BANCO_DIR.mkdir(exist_ok=True)
 DATABASE = BANCO_DIR / "biblioteca.db"
 
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+class FlexRow(dict):
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return list(self.values())[key]
+        return super().__getitem__(key)
+
+def _flex_row(cursor):
+    def make_row(values):
+        if cursor.description is None:
+            return values
+        return FlexRow({desc.name: val for desc, val in zip(cursor.description, values)})
+    return make_row
+
 def conectar():
-    conexao = sqlite3.connect(DATABASE)
-    conexao.row_factory = sqlite3.Row
-    return conexao
+    if not DATABASE_URL:
+        raise RuntimeError("Defina DATABASE_URL.")
+    return psycopg.connect(DATABASE_URL, row_factory=_flex_row)
 
 
 # ------------------------------------------------------------
@@ -31,7 +58,7 @@ def _linha(linha):
 def query(sql, params=None):
     conexao = conectar()
     try:
-        linhas = conexao.execute(sql, params or []).fetchall()
+        linhas = conexao.execute(sql.replace("?", "%s"), params or []).fetchall()
         return [dict(l) for l in linhas]
     finally:
         conexao.close()
@@ -40,7 +67,7 @@ def query(sql, params=None):
 def query_one(sql, params=None):
     conexao = conectar()
     try:
-        linha = conexao.execute(sql, params or []).fetchone()
+        linha = conexao.execute(sql.replace("?", "%s"), params or []).fetchone()
         return _linha(linha)
     finally:
         conexao.close()
@@ -49,7 +76,7 @@ def query_one(sql, params=None):
 def execute(sql, params=None):
     conexao = conectar()
     try:
-        conexao.execute(sql, params or [])
+        conexao.execute(sql.replace("?", "%s"), params or [])
         conexao.commit()
     finally:
         conexao.close()
@@ -58,11 +85,11 @@ def execute(sql, params=None):
 def execute_insert(sql, params=None):
     conexao = conectar()
     try:
-        cursor =         cursor = conexao.execute(sql, params or [])
+        cursor = conexao.execute(sql.replace("?", "%s"), params or [])
         if "RETURNING" in sql.upper():
             linha = cursor.fetchone()
             conexao.commit()
-            return linha[0] if linha else None
+            return list(linha.values())[0] if linha else None
         conexao.commit()
         return cursor.lastrowid
     finally:
@@ -70,7 +97,7 @@ def execute_insert(sql, params=None):
 
 
 def _executar(conexao, sql, params=None):
-    return conexao.execute(sql, params or [])
+    return conexao.execute(sql.replace("?", "%s"), params or [])
 
 
 @contextmanager
@@ -87,61 +114,22 @@ def transacao():
 
 
 def criar_tabela_usuarios():
-    conexao = conectar()
-
-    conexao.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            cpf TEXT NOT NULL UNIQUE,
-            data_nascimento TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            telefone TEXT NOT NULL,
-            matricula TEXT NOT NULL UNIQUE,
-            curso TEXT NOT NULL,
-            tipo_usuario TEXT NOT NULL,
-            senha TEXT NOT NULL
-        )
-    """)
-
-    conexao.commit()
-    conexao.close()
-
+    pass
 
 def inicializar_banco():
-    """Cria o banco a partir de esquema.sql se ele não existir
-    ou estiver com um esquema antigo/incompleto."""
-    esquema = ESQUEMA
-
-    precisa_recriar = False
-    if not DATABASE.exists():
-        precisa_recriar = True
-    else:
-        try:
-            conexao = conectar()
-            colunas = {
-                linha[1]
-                for linha in conexao.execute("PRAGMA table_info(usuarios)")
-            }
-            tabelas = {
-                linha[0]
-                for linha in conexao.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table'"
-                )
-            }
-            conexao.close()
-            if "perfil" not in colunas or "livros" not in tabelas:
-                precisa_recriar = True
-        except Exception:
-            precisa_recriar = True
-
-    if precisa_recriar and esquema.exists():
-        conexao = sqlite3.connect(DATABASE)
-        try:
-            conexao.executescript(esquema.read_text(encoding="utf-8-sig"))
-            conexao.commit()
-        finally:
-            conexao.close()
+    from pathlib import Path
+    esquema = Path(__file__).resolve().parent.parent / 'banco' / 'esquema_postgres.sql'
+    try:
+        with conectar() as c:
+            existe = c.execute("SELECT to_regclass('public.usuarios')").fetchone()
+            if existe and list(existe.values())[0] is not None:
+                return
+            c.execute(esquema.read_text(encoding='utf-8-sig'))
+            c.commit()
+    except Exception:
+        with conectar() as c:
+            c.execute(esquema.read_text(encoding='utf-8-sig'))
+            c.commit()
 
 
 def buscar_usuario_por_id(usuario_id):
@@ -151,7 +139,7 @@ def buscar_usuario_por_id(usuario_id):
         """
         SELECT *
         FROM usuarios
-        WHERE id = ?
+        WHERE id = %s
         """,
         (usuario_id,)
     ).fetchone()
@@ -182,7 +170,7 @@ def dados_dashboard():
             SELECT COUNT(*)
             FROM emprestimos
             WHERE status = 'Emprestado'
-              AND data_prevista_devolucao < date('now', 'localtime')
+              AND data_prevista_devolucao::date < CURRENT_DATE
             """
         ).fetchone()[0]
 
@@ -210,7 +198,7 @@ def dados_dashboard():
             {"mes": linha[0], "total": linha[1]}
             for linha in conexao.execute(
                 """
-                SELECT substr(data_emprestimo, 1, 7) AS mes, COUNT(*) AS total
+                SELECT substr(data_emprestimo::text, 1, 7) AS mes, COUNT(*) AS total
                 FROM emprestimos
                 GROUP BY mes
                 ORDER BY mes
@@ -287,13 +275,12 @@ def dados_dashboard():
             for linha in conexao.execute(
                 """
                 SELECT l.titulo, u.nome,
-                       CAST(julianday('now', 'localtime')
-                            - julianday(e.data_prevista_devolucao) AS INTEGER)
+                       (CURRENT_DATE - e.data_prevista_devolucao::date)
                 FROM emprestimos e
                 JOIN usuarios u ON u.id = e.usuario_id
                 JOIN livros l ON l.id = e.livro_id
                 WHERE e.status = 'Emprestado'
-                  AND e.data_prevista_devolucao < date('now', 'localtime')
+                  AND e.data_prevista_devolucao::date < CURRENT_DATE
                 ORDER BY 3 DESC
                 LIMIT 8
                 """
@@ -328,7 +315,7 @@ def buscar_usuario_por_email(email):
         """
         SELECT *
         FROM usuarios
-        WHERE email = ?
+        WHERE email = %s
         """,
         (email,)
     ).fetchone()
@@ -345,7 +332,7 @@ def buscar_usuario_por_cpf(cpf):
         """
         SELECT *
         FROM usuarios
-        WHERE cpf = ?
+        WHERE cpf = %s
         """,
         (cpf,)
     ).fetchone()
@@ -362,7 +349,7 @@ def buscar_usuario_por_matricula(matricula):
         """
         SELECT *
         FROM usuarios
-        WHERE matricula = ?
+        WHERE matricula = %s
         """,
         (matricula,)
     ).fetchone()
@@ -400,7 +387,7 @@ def cadastrar_usuario(
             senha,
             perfil
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             nome,

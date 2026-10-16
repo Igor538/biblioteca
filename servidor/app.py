@@ -16,7 +16,6 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import (
-    criar_tabela_usuarios,
     buscar_usuario_por_email,
     buscar_usuario_por_cpf,
     buscar_usuario_por_matricula,
@@ -44,7 +43,6 @@ app.secret_key = "biblioteca-chave-secreta-trocar-em-producao"
 
 from database import inicializar_banco
 inicializar_banco()
-criar_tabela_usuarios()
 
 from auth import inicializar_administradores
 inicializar_administradores()
@@ -185,6 +183,10 @@ def login():
 # CADASTRO
 # ============================================================
 
+@app.route('/recuperar-senha')
+def recuperar_senha_page():
+    return render_template('recuperar-senha.html')
+
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
 
@@ -281,6 +283,16 @@ def cadastro():
 def sistema():
     return render_template("dashboard.html")
 
+# consulta publica
+
+@app.route("/catalogo")
+def catalogo_publico():
+    return render_template("catalogo.html")
+
+@app.route("/consulta")
+def consulta_publica():
+    return render_template("consulta.html")
+
 
 # ============================================================
 # LOGOUT
@@ -297,7 +309,6 @@ def logout():
 # ============================================================
 
 _PAGINAS = {
-    "consulta": "consulta.html",
     "emprestimos": "emprestimos.html",
     "usuarios": "usuarios.html",
     "reservas": "reservas.html",

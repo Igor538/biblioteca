@@ -392,6 +392,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 form.reset();
 
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1200);
+
             } else {
 
                 mensagem.textContent =
