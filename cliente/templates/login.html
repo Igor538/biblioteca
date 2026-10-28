@@ -14,10 +14,9 @@
 
     <div class="login-area">
 
-        <!-- Formulário de login -->
         <div class="container">
 
-            <h2>Login da Biblioteca 📖</h2>
+            <h2>Login da Biblioteca</h2>
 
             <form id="loginForm">
 
@@ -37,6 +36,8 @@
                     required
                 >
 
+                <button type="button" id="btnEsqueceuSenha" class="link-btn" onclick="window.location.href='/recuperar-senha'">Esqueceu sua senha?</button>
+
                 <div id="mensagem"></div>
 
                 <button type="submit">
@@ -50,9 +51,13 @@
                 <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
             </p>
 
+            <p>
+                Quer apenas consultar?
+                <a href="/catalogo">Ver livros sem cadastro</a>
+            </p>
+
         </div>
 
-        <!-- GIF do livro -->
         <div class="gif-container">
 
             <img

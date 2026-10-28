@@ -203,3 +203,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('btnEsqueceuSenha');if(b)b.addEventListener('click',()=>location.href='/recuperar-senha');});

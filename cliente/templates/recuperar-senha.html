@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Biblioteca</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="login-area">
+        <div class="container">
+            <h2>Recuperar Senha</h2>
+            <div id="mensagem"></div>
+
+            <div id="formEmail">
+                <input type="email" id="email" placeholder="Seu e-mail" required>
+                <button type="button" id="btnEnviar">Enviar instruções</button>
+            </div>
+
+            <div id="formReset" style="display:none">
+                <input type="password" id="novaSenha" placeholder="Nova senha" required>
+                <button type="button" id="btnResetar">Redefinir senha</button>
+            </div>
+
+            <p><a href="/login">Voltar ao login</a></p>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const mensagem = document.getElementById('mensagem');
+        const formEmail = document.getElementById('formEmail');
+        const formReset = document.getElementById('formReset');
+
+        if (token) {
+            formEmail.style.display = 'none';
+            formReset.style.display = 'block';
+        }
+
+        document.getElementById('btnEnviar').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            mensagem.textContent = '';
+            mensagem.className = '';
+            if (!email) { mensagem.textContent = 'Informe o e-mail.'; mensagem.className = 'mensagem-erro'; return; }
+            const r = await fetch('/api/esqueceu-senha', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+            const data = await r.json();
+            mensagem.textContent = data.mensagem || data.erro || 'Erro ao processar a solicitação.';
+            mensagem.className = r.ok ? 'mensagem-sucesso' : 'mensagem-erro';
+        });
+
+        if (token) {
+            document.getElementById('btnResetar').addEventListener('click', async () => {
+                const senha = document.getElementById('novaSenha').value;
+                if (senha.length < 6) { mensagem.textContent = 'Senha muito curta.'; mensagem.className='mensagem-erro'; return; }
+                const r = await fetch('/api/redefinir-senha', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,senha})});
+                const data = await r.json();
+                mensagem.textContent = data.mensagem || data.erro;
+                mensagem.className = r.ok ? 'mensagem-sucesso' : 'mensagem-erro';
+                if (r.ok) {
+                    setTimeout(() => { window.location.href = '/login'; }, 3000);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

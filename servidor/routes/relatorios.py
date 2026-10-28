@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from database import query, query_one
+from database import query
 from auth import requer_perfil, requer_autenticacao
 
 relatorios_bp = Blueprint("relatorios", __name__)
@@ -10,7 +10,7 @@ relatorios_bp = Blueprint("relatorios", __name__)
 def livros_mais_emprestados():
     limite = request.args.get("limite", default=10, type=int)
     dados = query(
-        f"""SELECT l.id, l.titulo, l.autor,
+        """SELECT l.id, l.titulo, l.autor,
                    COUNT(e.id) AS total_emprestimos
             FROM livros l
             JOIN emprestimos e ON e.livro_id = l.id
@@ -28,7 +28,7 @@ def livros_atrasados():
     dados = query(
         """SELECT e.id, u.nome AS usuario_nome, u.email AS usuario_email, u.telefone,
                   l.titulo AS livro_titulo, e.data_emprestimo, e.data_prevista_devolucao,
-                  (CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER)) AS dias_atraso
+                  (CURRENT_DATE - e.data_prevista_devolucao) AS dias_atraso
            FROM emprestimos e
            JOIN usuarios u ON e.usuario_id = u.id
            JOIN livros l ON e.livro_id = l.id
@@ -103,7 +103,7 @@ def devolucoes_periodo():
     dados = query(
         f"""SELECT e.id, u.nome AS usuario_nome, l.titulo AS livro_titulo,
                    e.data_emprestimo, e.data_prevista_devolucao, e.data_devolucao,
-                   max(CAST(julianday(e.data_devolucao) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) AS dias_atraso
+                   GREATEST(e.data_devolucao - e.data_prevista_devolucao, 0) AS dias_atraso
             FROM emprestimos e
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN livros l ON e.livro_id = l.id
@@ -149,12 +149,12 @@ def estatisticas_acervo():
 @requer_perfil("Administrador", "Bibliotecário")
 def circulacao():
     meses = query(
-        """SELECT strftime('%Y-%m', data_emprestimo) AS mes,
+        """SELECT to_char(data_emprestimo, 'YYYY-MM') AS mes,
                   COUNT(*) AS emprestimos,
                   COUNT(data_devolucao) AS devolucoes
            FROM emprestimos
-           WHERE data_emprestimo >= date('now','-6 months')
-           GROUP BY strftime('%Y-%m', data_emprestimo)
+           WHERE data_emprestimo >= CURRENT_DATE - INTERVAL '6 months'
+           GROUP BY to_char(data_emprestimo, 'YYYY-MM')
            ORDER BY mes ASC"""
     )
     por_usuario = query(

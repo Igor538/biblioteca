@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS usuarios;
 
 
 CREATE TABLE usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     nome VARCHAR(150) NOT NULL,
     email VARCHAR(200) UNIQUE NOT NULL,
     telefone VARCHAR(20),
@@ -37,7 +37,7 @@ CREATE TABLE usuarios (
 
 
 CREATE TABLE livros (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     titulo VARCHAR(250) NOT NULL,
     subtitulo VARCHAR(250),
     autor VARCHAR(200) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE livros (
 
 
 CREATE TABLE emprestimos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     usuario_id INTEGER NOT NULL,
     livro_id INTEGER NOT NULL,
     data_emprestimo DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -80,7 +80,7 @@ CREATE TABLE emprestimos (
 
 
 CREATE TABLE renovacoes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     emprestimo_id INTEGER NOT NULL,
     data_renovacao DATE NOT NULL DEFAULT CURRENT_DATE,
     nova_data_prevista DATE NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE renovacoes (
 
 
 CREATE TABLE reservas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     livro_id INTEGER NOT NULL,
     usuario_id INTEGER NOT NULL,
     data_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -107,7 +107,7 @@ CREATE TABLE reservas (
 
 
 CREATE TABLE penalidades (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     usuario_id INTEGER NOT NULL,
     emprestimo_id INTEGER,
     dias_atraso INTEGER NOT NULL DEFAULT 0,
@@ -125,7 +125,7 @@ CREATE TABLE penalidades (
 
 
 CREATE TABLE notificacoes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     usuario_id INTEGER NOT NULL,
     tipo VARCHAR(50),
     mensagem TEXT,
@@ -138,7 +138,7 @@ CREATE TABLE notificacoes (
 
 
 CREATE TABLE auditoria_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     usuario_responsavel VARCHAR(150),
     data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     operacao VARCHAR(100) NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE auditoria_logs (
 
 
 CREATE TABLE servicos_solicitacoes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     usuario_id INTEGER NOT NULL,
     tipo VARCHAR(100) NOT NULL,
     descricao TEXT,
@@ -165,12 +165,24 @@ CREATE TABLE servicos_solicitacoes (
 
 
 CREATE TABLE sessoes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY ,
     token VARCHAR(64) UNIQUE NOT NULL,
     usuario_id INTEGER NOT NULL,
     criada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
+
+
+CREATE TABLE tokens_recuperacao (
+    token VARCHAR(64) PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    data_expiracao TIMESTAMP NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_tokens_recuperacao_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_tokens_recuperacao_usuario ON tokens_recuperacao (usuario_id);
+CREATE INDEX idx_tokens_recuperacao_expiracao ON tokens_recuperacao (data_expiracao);
 
 
 
@@ -190,7 +202,7 @@ CREATE INDEX idx_livros_autor ON livros (autor);
 
 
 
-INSERT OR IGNORE INTO usuarios (nome, email, telefone, endereco, prontuario, curso, ano_ingresso, tipo_usuario, perfil, status) VALUES
+INSERT INTO usuarios (nome, email, telefone, endereco, prontuario, curso, ano_ingresso, tipo_usuario, perfil, status) VALUES
     ('Ana Beatriz Silva',      'ana.silva@email.com',       '(11) 99999-0001', 'Rua das Flores, 100 - Capivari', 'CV2023001', 'Informática',        2023, 'Discente Regular', 'Usuário',       'Ativo'),
     ('Carlos Eduardo Santos',  'carlos.santos@email.com',   '(11) 99999-0002', 'Av. da Indústria, 200 - Capivari', NULL, NULL, 2019, 'Servidor', 'Bibliotecário', 'Ativo'),
     ('Mariana Oliveira Costa', 'mariana.costa@email.com',   '(11) 99999-0003', 'Rua dos Pinheiros, 50 - Capivari', 'CV2022001', 'Eletrônica',        2022, 'Discente Regular', 'Usuário',       'Ativo'),
@@ -199,7 +211,7 @@ INSERT OR IGNORE INTO usuarios (nome, email, telefone, endereco, prontuario, cur
     ('Rafael Souza Almeida',   'rafael.almeida@email.com',  '(11) 99999-0006', 'Rua da Estação, 45 - Capivari',   'CV2020007', 'Administração',     2020, 'Discente Regular', 'Usuário',       'Suspenso')
 ;
 
-INSERT OR IGNORE INTO livros (titulo, subtitulo, autor, editora, local_publicacao, ano, isbn, assuntos, palavras_chave, numero_paginas, serie, colecao, volume, resumo, categoria, localizacao, quantidade, disponivel) VALUES
+INSERT INTO livros (titulo, subtitulo, autor, editora, local_publicacao, ano, isbn, assuntos, palavras_chave, numero_paginas, serie, colecao, volume, resumo, categoria, localizacao, quantidade, disponivel) VALUES
     ('Dom Casmurro', 'Romance', 'Machado de Assis', 'Garnier', 'Rio de Janeiro', 1899, '978-85-01-00001-1', 'Literatura Brasileira; Romances', 'machado; ciúme; bentinho', 256, NULL, 'Clássicos da Literatura', 'Vol. 1', 'O clássico da dúvida de Bentinho em relação a Capitu.', 'Literatura Brasileira', 'A-01', 5, 5),
     ('O Senhor dos Anéis', 'A Sociedade do Anel', 'J.R.R. Tolkien', 'HarperCollins', 'São Paulo', 1954, '978-85-01-00002-8', 'Fantasia', 'anel; tolkien; terra média', 576, NULL, 'O Senhor dos Anéis', 'Vol. 1', 'A jornada de Frodo para destruir o anel do poder.', 'Fantasia', 'B-02', 3, 3),
     ('1984', 'Romance distópico', 'George Orwell', 'Companhia das Letras', 'São Paulo', 1949, '978-85-01-00003-5', 'Ficção Científica; Distopia', 'orwell; big brother; ditadura', 336, NULL, 'Clássicos', 'Vol. 1', 'Uma sociedade sob vigilância totalitária.', 'Ficção Científica', 'C-03', 4, 4),
@@ -214,41 +226,41 @@ INSERT OR IGNORE INTO livros (titulo, subtitulo, autor, editora, local_publicaca
 
 
 INSERT INTO emprestimos (usuario_id, livro_id, data_emprestimo, data_prevista_devolucao, data_devolucao, renovacoes, status) VALUES
-    (1, 1, date('now','-8 days'),  date('now','-1 day'),  NULL, 0, 'Emprestado'),
-    (2, 3, date('now','-5 days'),  date('now','+2 days'), NULL, 0, 'Emprestado'),
-    (3, 5, date('now','-12 days'), date('now','+9 days'), NULL, 1, 'Emprestado'),
-    (4, 6, date('now','-10 days'), date('now','-3 days'), NULL, 0, 'Emprestado'),
-    (5, 2, date('now','-3 days'),  date('now','+4 days'), NULL, 0, 'Emprestado'),
-    (1, 7, date('now','-20 days'), date('now','-6 days'), date('now','-10 days'), 0, 'Devolvido'),
-    (2, 8, date('now','-30 days'), date('now','-16 days'), date('now','-20 days'), 1, 'Devolvido'),
-    (3, 4, date('now','-15 days'), date('now','-1 day'),  date('now','-2 days'), 0, 'Devolvido');
+    (1, 1, (CURRENT_DATE - INTERVAL '-8 days'),  CURRENT_DATE,  NULL, 0, 'Emprestado'),
+    (2, 3, (CURRENT_DATE - INTERVAL '-5 days'),  CURRENT_DATE, NULL, 0, 'Emprestado'),
+    (3, 5, (CURRENT_DATE - INTERVAL '-12 days'), CURRENT_DATE, NULL, 1, 'Emprestado'),
+    (4, 6, (CURRENT_DATE - INTERVAL '-10 days'), (CURRENT_DATE - INTERVAL '-3 days'), NULL, 0, 'Emprestado'),
+    (5, 2, (CURRENT_DATE - INTERVAL '-3 days'),  CURRENT_DATE, NULL, 0, 'Emprestado'),
+    (1, 7, (CURRENT_DATE - INTERVAL '-20 days'), (CURRENT_DATE - INTERVAL '-6 days'), (CURRENT_DATE - INTERVAL '-10 days'), 0, 'Devolvido'),
+    (2, 8, (CURRENT_DATE - INTERVAL '-30 days'), (CURRENT_DATE - INTERVAL '-16 days'), (CURRENT_DATE - INTERVAL '-20 days'), 1, 'Devolvido'),
+    (3, 4, (CURRENT_DATE - INTERVAL '-15 days'), CURRENT_DATE,  (CURRENT_DATE - INTERVAL '-2 days'), 0, 'Devolvido');
 
 INSERT INTO renovacoes (emprestimo_id, data_renovacao, nova_data_prevista) VALUES
-    (3, date('now','-5 days'), date('now','+9 days')),
-    (7, date('now','-18 days'), date('now','-16 days'));
+    (3, (CURRENT_DATE - INTERVAL '-5 days'), CURRENT_DATE),
+    (7, (CURRENT_DATE - INTERVAL '-18 days'), (CURRENT_DATE - INTERVAL '-16 days'));
 
 INSERT INTO reservas (livro_id, usuario_id, data_reserva, status, notificado) VALUES
-    (1, 2, date('now','-3 days'), 'Ativa', 0),
-    (1, 3, date('now','-2 days'), 'Ativa', 0),
-    (6, 1, date('now','-1 day'),  'Ativa', 0),
-    (10, 5, date('now','-4 days'), 'Cancelada', 0);
+    (1, 2, (CURRENT_DATE - INTERVAL '-3 days'), 'Ativa', 0),
+    (1, 3, (CURRENT_DATE - INTERVAL '-2 days'), 'Ativa', 0),
+    (6, 1, CURRENT_DATE,  'Ativa', 0),
+    (10, 5, (CURRENT_DATE - INTERVAL '-4 days'), 'Cancelada', 0);
 
 INSERT INTO penalidades (usuario_id, emprestimo_id, dias_atraso, dias_suspensao, data_inicio, data_fim, status, descricao) VALUES
-    (4, 4, 3, 6,  date('now','-3 days'),  date('now','+3 days'), 'Ativa', 'Atraso de 3 dias na devolução de Grande Sertão: Veredas'),
-    (6, NULL, 10, 20, date('now','-5 days'), date('now','+15 days'), 'Ativa', 'Atraso de 10 dias na devolução de material');
+    (4, 4, 3, 6,  (CURRENT_DATE - INTERVAL '-3 days'),  CURRENT_DATE, 'Ativa', 'Atraso de 3 dias na devolução de Grande Sertão: Veredas'),
+    (6, NULL, 10, 20, (CURRENT_DATE - INTERVAL '-5 days'), CURRENT_DATE, 'Ativa', 'Atraso de 10 dias na devolução de material');
 
 INSERT INTO notificacoes (usuario_id, tipo, mensagem, lida, data_criacao) VALUES
-    (1, 'prazo_proximo', 'O prazo de devolução de Dom Casmurro vence em breve.', 0, date('now','-1 day')),
-    (2, 'emprestimo', 'Empréstimo de 1984 realizado com sucesso.', 1, date('now','-5 days')),
-    (4, 'atraso', 'Seu empréstimo de Grande Sertão: Veredas está em atraso.', 0, date('now','-3 days')),
-    (6, 'suspensao', 'Você foi suspenso por atraso de 10 dias. Suspensão de 20 dias aplicada.', 0, date('now','-5 days'));
+    (1, 'prazo_proximo', 'O prazo de devolução de Dom Casmurro vence em breve.', 0, CURRENT_DATE),
+    (2, 'emprestimo', 'Empréstimo de 1984 realizado com sucesso.', 1, (CURRENT_DATE - INTERVAL '-5 days')),
+    (4, 'atraso', 'Seu empréstimo de Grande Sertão: Veredas está em atraso.', 0, (CURRENT_DATE - INTERVAL '-3 days')),
+    (6, 'suspensao', 'Você foi suspenso por atraso de 10 dias. Suspensão de 20 dias aplicada.', 0, (CURRENT_DATE - INTERVAL '-5 days'));
 
 INSERT INTO auditoria_logs (usuario_responsavel, data_hora, operacao, dados_afetados) VALUES
-    ('Administrador', date('now','-2 days'), 'Cadastro de Livro', '{"titulo": "Dom Casmurro"}'),
-    ('Administrador', date('now','-2 days'), 'Cadastro de Usuário', '{"nome": "Ana Beatriz Silva"}'),
-    ('Carlos Eduardo Santos', date('now','-8 days'), 'Empréstimo realizado', '{"usuario": "Ana Beatriz Silva", "livro": "Dom Casmurro"}');
+    ('Administrador', (CURRENT_DATE - INTERVAL '-2 days'), 'Cadastro de Livro', '{"titulo": "Dom Casmurro"}'),
+    ('Administrador', (CURRENT_DATE - INTERVAL '-2 days'), 'Cadastro de Usuário', '{"nome": "Ana Beatriz Silva"}'),
+    ('Carlos Eduardo Santos', (CURRENT_DATE - INTERVAL '-8 days'), 'Empréstimo realizado', '{"usuario": "Ana Beatriz Silva", "livro": "Dom Casmurro"}');
 
 INSERT INTO servicos_solicitacoes (usuario_id, tipo, descricao, dados_json, status, data_solicitacao) VALUES
-    (1, 'Declaração de Nada Consta', 'Declaração para renovação de bolsa', '{"motivo": "Renovação de bolsa"}', 'Pendente', date('now','-1 day')),
-    (3, 'Sugestão de Aquisição', 'Livro de Inteligência Artificial para o curso de Informática', '{"titulo": "Inteligência Artificial: Uma Abordagem Moderna"}', 'Em Análise', date('now','-4 days')),
-    (5, 'Ficha Catalográfica', 'Necessário para dissertação', '{"curso": "Mestrado"}', 'Concluída', date('now','-10 days'));
+    (1, 'Declaração de Nada Consta', 'Declaração para renovação de bolsa', '{"motivo": "Renovação de bolsa"}', 'Pendente', CURRENT_DATE),
+    (3, 'Sugestão de Aquisição', 'Livro de Inteligência Artificial para o curso de Informática', '{"titulo": "Inteligência Artificial: Uma Abordagem Moderna"}', 'Em Análise', (CURRENT_DATE - INTERVAL '-4 days')),
+    (5, 'Ficha Catalográfica', 'Necessário para dissertação', '{"curso": "Mestrado"}', 'Concluída', (CURRENT_DATE - INTERVAL '-10 days'));
