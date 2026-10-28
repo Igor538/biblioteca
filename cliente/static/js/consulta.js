@@ -91,11 +91,11 @@ function renderizarResultados() {
             </div>
             <div class="livro-card-acoes">
                 <button class="btn btn-sm btn-secondary" onclick="verDetalheConsulta(${livro.id})" title="Ver detalhes">
-                    <svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg> Detalhes
+                     Detalhes
                 </button>
                 ${podeReservar ? `
                     <a class="btn btn-sm btn-primary" href="/reservas?livro=${livro.id}" title="Reservar">
-                        <svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg> Reservar
+                         Reservar
                     </a>
                 ` : ''}
             </div>
