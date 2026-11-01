@@ -1,14 +1,29 @@
+from datetime import date
+
 from flask import Blueprint, request, jsonify
 from database import query
 from auth import requer_perfil, requer_autenticacao
 
 relatorios_bp = Blueprint("relatorios", __name__)
 
+MAX_LINHAS_RELATORIO = 5000
+
+
+def _data_arg(nome):
+    valor = (request.args.get(nome) or "").strip()
+    if not valor:
+        return None, None
+    try:
+        return date.fromisoformat(valor).isoformat(), None
+    except ValueError:
+        return None, f"Data '{nome}' inválida. Use o formato AAAA-MM-DD."
+
 
 @relatorios_bp.route("/relatorios/livros-mais-emprestados", methods=["GET"])
 @requer_perfil("Administrador", "Bibliotecário")
 def livros_mais_emprestados():
     limite = request.args.get("limite", default=10, type=int)
+    limite = max(1, min(int(limite or 10), 100))
     dados = query(
         """SELECT l.id, l.titulo, l.autor,
                    COUNT(e.id) AS total_emprestimos
@@ -63,8 +78,13 @@ def usuarios_pendencias():
 @relatorios_bp.route("/relatorios/emprestimos-periodo", methods=["GET"])
 @requer_perfil("Administrador", "Bibliotecário")
 def emprestimos_periodo():
-    inicio = request.args.get("inicio")
-    fim = request.args.get("fim")
+    inicio, erro = _data_arg("inicio")
+    if erro:
+        return jsonify({"erro": erro}), 400
+    fim, erro = _data_arg("fim")
+    if erro:
+        return jsonify({"erro": erro}), 400
+
     where = []
     params = []
     if inicio:
@@ -81,8 +101,9 @@ def emprestimos_periodo():
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN livros l ON e.livro_id = l.id
             {where_sql}
-            ORDER BY e.data_emprestimo DESC""",
-        params
+            ORDER BY e.data_emprestimo DESC
+            LIMIT ?""",
+        params + [MAX_LINHAS_RELATORIO]
     )
     return jsonify(dados), 200
 
@@ -90,8 +111,13 @@ def emprestimos_periodo():
 @relatorios_bp.route("/relatorios/devolucoes-periodo", methods=["GET"])
 @requer_perfil("Administrador", "Bibliotecário")
 def devolucoes_periodo():
-    inicio = request.args.get("inicio")
-    fim = request.args.get("fim")
+    inicio, erro = _data_arg("inicio")
+    if erro:
+        return jsonify({"erro": erro}), 400
+    fim, erro = _data_arg("fim")
+    if erro:
+        return jsonify({"erro": erro}), 400
+
     where = ["e.data_devolucao IS NOT NULL"]
     params = []
     if inicio:
@@ -108,8 +134,9 @@ def devolucoes_periodo():
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN livros l ON e.livro_id = l.id
             WHERE {' AND '.join(where)}
-            ORDER BY e.data_devolucao DESC""",
-        params
+            ORDER BY e.data_devolucao DESC
+            LIMIT ?""",
+        params + [MAX_LINHAS_RELATORIO]
     )
     return jsonify(dados), 200
 

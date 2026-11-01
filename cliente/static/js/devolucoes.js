@@ -53,7 +53,7 @@ function renderizarAtivos() {
                 : `<span class="status-badge status-success">Em dia</span>`}</td>
             <td><span class="status-badge ${atrasado ? 'status-danger' : 'status-warning'}">${atrasado ? 'Atrasado' : 'Emprestado'}</span></td>
             <td>
-                <button class="btn btn-sm btn-success" onclick="abrirConfirmacao(${e.id})" aria-label="Devolver livro">
+                <button class="btn btn-sm btn-success" data-call="abrirConfirmacao" data-id="${e.id}" aria-label="Devolver livro">
                     <svg class="ic" aria-hidden="true"><use href="#i-return"></use></svg> Devolver
                 </button>
             </td>

@@ -14,47 +14,59 @@
 
     <div class="login-area">
 
-        <div class="container">
+        <div class="login-col">
 
-            <h2>Login da Biblioteca</h2>
+            <a class="voltar-site" href="{{ url_for('index') }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+                Voltar ao site
+            </a>
 
-            <form id="loginForm">
+            <div class="container">
 
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="E-mail"
-                    required
-                >
+                <h2>Login da Biblioteca</h2>
 
-                <input
-                    type="password"
-                    id="senha"
-                    name="senha"
-                    placeholder="Senha"
-                    required
-                >
+                <form id="loginForm">
 
-                <button type="button" id="btnEsqueceuSenha" class="link-btn" onclick="window.location.href='/recuperar-senha'">Esqueceu sua senha?</button>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="E-mail"
+                        required
+                    >
 
-                <div id="mensagem"></div>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Senha"
+                        required
+                    >
 
-                <button type="submit">
-                    Entrar
-                </button>
+                    <button type="button" id="btnEsqueceuSenha" class="link-btn">Esqueceu sua senha?</button>
 
-            </form>
+                    <div id="mensagem"></div>
 
-            <p>
-                Não possui conta?
-                <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
-            </p>
+                    <button type="submit">
+                        Entrar
+                    </button>
 
-            <p>
-                Quer apenas consultar?
-                <a href="/catalogo">Ver livros sem cadastro</a>
-            </p>
+                </form>
+
+                <p>
+                    Não possui conta?
+                    <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
+                </p>
+
+                <p>
+                    Quer apenas consultar?
+                    <a href="/catalogo">Ver livros sem cadastro</a>
+                </p>
+
+            </div>
 
         </div>
 

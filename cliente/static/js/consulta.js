@@ -54,7 +54,7 @@ function realizarBusca(termo, campo) {
         .finally(() => hideLoading());
 }
 
-function renderizarResultados() {
+async function renderizarResultados() {
     const grid = document.getElementById('consultaGrid');
     grid.innerHTML = '';
 
@@ -67,7 +67,7 @@ function renderizarResultados() {
     if (paginaConsulta > totalPaginas) paginaConsulta = totalPaginas;
     const pagina = paginar(resultadoBusca, paginaConsulta, POR_PAGINA_CONSULTA);
 
-    const usuario = Sessao.usuario;
+    const usuario = await Sessao.carregar();
     const podeReservar = usuario && usuario.perfil === 'Usuário';
 
     pagina.forEach(livro => {
@@ -90,7 +90,7 @@ function renderizarResultados() {
                 </div>
             </div>
             <div class="livro-card-acoes">
-                <button class="btn btn-sm btn-secondary" onclick="verDetalheConsulta(${livro.id})" title="Ver detalhes">
+                <button class="btn btn-sm btn-secondary" data-call="verDetalheConsulta" data-id="${livro.id}" title="Ver detalhes">
                      Detalhes
                 </button>
                 ${podeReservar ? `

@@ -3,8 +3,8 @@ let reservasFiltradas = [];
 let paginaReserva = 1;
 const POR_PAGINA_RESERVA = 12;
 
-document.addEventListener('DOMContentLoaded', function () {
-        const usuario = Sessao.usuario;
+document.addEventListener('DOMContentLoaded', async function () {
+    const usuario = await Sessao.carregar();
     const isUsuario = usuario && usuario.perfil === 'Usuário';
 
     document.getElementById('btnNovaReserva').addEventListener('click', () => abrirFormReserva());
@@ -179,7 +179,7 @@ function renderizarReservas(reservas) {
             <td>${getStatusBadge(r.status === 'Disponível' ? 'Disponível_Reserva' : r.status)}</td>
             <td>
                 ${podeCancelar ? `
-                    <button class="btn btn-sm btn-delete" onclick="cancelarReserva(${r.id})" title="Cancelar reserva" aria-label="Cancelar reserva">
+                    <button class="btn btn-sm btn-delete" data-call="cancelarReserva" data-id="${r.id}" title="Cancelar reserva" aria-label="Cancelar reserva">
                         <svg class="ic" aria-hidden="true"><use href="#i-trash"></use></svg>
                     </button>
                 ` : ''}

@@ -354,7 +354,7 @@ def buscar_usuario_por_email(email):
     conexao = conectar()
     try:
         return conexao.execute(
-            "SELECT * FROM usuarios WHERE email = %s",
+            "SELECT * FROM usuarios WHERE LOWER(email) = LOWER(%s)",
             (email,)
         ).fetchone()
     finally:

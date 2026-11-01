@@ -44,17 +44,32 @@ Crie um arquivo `.env` na raiz do projeto. A `DATABASE_URL` é obrigatória (o s
 | `EMAIL_FROM_NAME` | não | Nome exibido do remetente (padrão `Biblioteca Digital`) |
 | `DB_POOL_SIZE` | não | Número máximo de conexões no pool (padrão `5`) |
 | `MOSTRAR_LINK_RECUPERACAO` | não | `1` mostra o link de redefinição na tela (apenas desenvolvimento) |
+| `APP_ENV` | recomendada | `production` ativa exigências de segurança (ex.: `SECRET_KEY`) |
+| `SESSION_HORAS` | não | Duração da sessão em horas (padrão `8`) |
+| `SESSION_COOKIE_SECURE` | não | `1` força o cookie de sessão apenas em HTTPS |
+| `TRUST_PROXY` | não | `1` confia em `X-Forwarded-For`/`X-Forwarded-Proto` (use atrás de proxy) |
+| `LOG_LEVEL` | não | Nível de log (`INFO` por padrão) |
+| `ADMIN_EMAIL` / `ADMIN_SENHA` | não | Credenciais iniciais do administrador (criadas só se a conta não existir) |
+| `BIB_EMAIL` / `BIB_SENHA` | não | Credenciais iniciais do bibliotecário (criadas só se a conta não existir) |
+
+Um modelo com todas as variáveis está em `.env.example`.
 
 ### 📧 Recuperação de senha
 
 Sem `SMTP_HOST`, o sistema entra em **modo desenvolvimento**: o e-mail é registrado no console e o link **não** aparece na tela (só aparece se `MOSTRAR_LINK_RECUPERACAO=1`). Com o SMTP configurado, a mensagem é enviada por e-mail.
 
-## 🔑 Contas padrão
+## 🔑 Contas de gestão
 
-| E-mail | Senha | Perfil |
-| ------ | ----- | ------ |
+Na primeira inicialização o sistema cria as contas abaixo **apenas se ainda não existirem**:
+
+| E-mail | Senha (desenvolvimento) | Perfil |
+| ------ | ----------------------- | ------ |
 | `admin@biblioteca.local` | `admin` | Administrador |
-| `bibliotecaria@biblioteca.local` | `biblioteca` | Bibliotecária |
+| `bibliotecaria@biblioteca.local` | `biblioteca` | Bibliotecário |
+
+- Com `ADMIN_SENHA` / `BIB_SENHA` definidas, essas senhas substituem as de teste.
+- Em produção (`APP_ENV=production`) as variáveis são obrigatórias e a inicialização falha
+  sem elas — as senhas de teste não são usadas.
 
 Novas contas criadas pelo cadastro público entram como **Leitor**.
 

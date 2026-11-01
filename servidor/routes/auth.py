@@ -1,77 +1,44 @@
 import os
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g, session
 from datetime import datetime, timedelta
+from werkzeug.security import check_password_hash
 from models import Usuario, Sessao, Auditoria, Penalidade, TokenRecuperacao
 from auth import validar_senha, criar_sessao, obter_usuario_autenticado, requer_autenticacao, gerar_token
 import email_service
+import validators as vd
 from . import erro_interno
-import time
-from collections import defaultdict
+from seguranca import (
+    HASH_FICTICIO,
+    ip_cliente,
+    limite_login as limite_login_compartilhado,
+    limite_login_ip,
+    limite_recuperacao,
+    limite_recuperacao_email,
+    validar_senha_forte,
+)
 
 auth_bp = Blueprint("auth", __name__)
-
-# -------------------------------------------------------------
-# RATE LIMIT DE LOGIN (proteção contra força bruta)
-# -------------------------------------------------------------
-# Armazena tentativas falhas por chave (IP + identificador).
-# Regras:
-#   - máx 5 falhas por chave a cada 15 minutos
-#   - bloqueio temporário por 15 minutos após o limite
-_TENTATIVAS = defaultdict(list)
-_MAX_TENTATIVAS = 5
-_JANELA_SEGUNDOS = 15 * 60
-
-
-def _chave_login(identificador):
-    return f"{request.remote_addr}|{identificador}"
-
-
-def _limpar_falhas(chave):
-    _TENTATIVAS.pop(chave, None)
-
-
-def _registrar_falha(chave):
-    agora = time.time()
-    lista = _TENTATIVAS[chave]
-    lista.append(agora)
-    _TENTATIVAS[chave] = [t for t in lista if agora - t <= _JANELA_SEGUNDOS]
-
-
-def _limpar_tentativas_antigas():
-    """Remove chaves sem tentativas recentes para não acumular memória."""
-    agora = time.time()
-    for chave in list(_TENTATIVAS.keys()):
-        lista = [t for t in _TENTATIVAS[chave] if agora - t <= _JANELA_SEGUNDOS]
-        if not lista:
-            del _TENTATIVAS[chave]
-        else:
-            _TENTATIVAS[chave] = lista
-
-
-def _esta_bloqueado(chave):
-    _limpar_tentativas_antigas()
-    agora = time.time()
-    lista = [t for t in _TENTATIVAS.get(chave, []) if agora - t <= _JANELA_SEGUNDOS]
-    _TENTATIVAS[chave] = lista
-    if len(lista) < _MAX_TENTATIVAS:
-        return False
-    return True
 
 
 @auth_bp.route("/api/login", methods=["POST"])
 def login():
-    dados = request.get_json()
-    if not dados:
-        return jsonify({"erro": "Dados inválidos"}), 400
+    dados = request.get_json(silent=True) or {}
 
-    identificador = (dados.get("usuario") or "").strip()
+    identificador = (dados.get("usuario") or "").strip().lower()
     senha = dados.get("senha") or ""
 
     if not identificador or not senha:
         return jsonify({"erro": "Informe usuário e senha."}), 400
 
-    chave = _chave_login(identificador)
-    if _esta_bloqueado(chave):
+    ip = ip_cliente()
+    chave = f"api|{ip}|{identificador}"
+
+    if not limite_login_ip.permitir(f"api-ip:{ip}"):
+        return jsonify({
+            "erro": "Muitas tentativas de login. Aguarde 15 minutos e tente novamente."
+        }), 429
+
+    if not limite_login_compartilhado.permitir(chave):
         return jsonify({
             "erro": "Muitas tentativas de login. Aguarde 15 minutos e tente novamente."
         }), 429
@@ -79,8 +46,11 @@ def login():
     usuario = Usuario.buscar_por_email(identificador) \
         or Usuario.buscar_por_prontuario(identificador)
 
-    if not usuario or not validar_senha(senha, usuario.get("senha")):
-        _registrar_falha(chave)
+    if not usuario:
+        check_password_hash(HASH_FICTICIO, senha)
+        return jsonify({"erro": "Usuário ou senha inválidos!"}), 401
+
+    if not usuario.get("senha") or not validar_senha(senha, usuario.get("senha")):
         return jsonify({"erro": "Usuário ou senha inválidos!"}), 401
 
     if usuario["status"] == "Inativo":
@@ -89,7 +59,7 @@ def login():
     Penalidade.atualizar_status_usuario(usuario["id"])
     usuario = Usuario.buscar(usuario["id"])
 
-    _limpar_falhas(chave)
+    limite_login_compartilhado.liberar(chave)
 
     token = criar_sessao(usuario)
     Auditoria.registrar("Login no sistema", {"usuario": usuario["nome"]}, usuario["nome"])
@@ -111,7 +81,9 @@ def login():
 @requer_autenticacao
 def logout():
     token = (request.headers.get("Authorization") or "").replace("Bearer ", "")
-    Sessao.encerrar(token)
+    if token:
+        Sessao.encerrar(token)
+    session.clear()
     return jsonify({"mensagem": "Sessão encerrada."}), 200
 
 
@@ -158,6 +130,19 @@ def atualizar_meus_dados():
     if not filtrados:
         return jsonify({"erro": "Nenhum dado permitido enviado."}), 400
 
+    filtrados = vd.limpar_campos(filtrados, permitidos)
+
+    if "nome" in filtrados and len(filtrados["nome"] or "") < 3:
+        return jsonify({"erro": "Informe seu nome completo."}), 400
+
+    if "email" in filtrados:
+        filtrados["email"] = (filtrados["email"] or "").lower()
+        if not vd.validar_email(filtrados["email"]):
+            return jsonify({"erro": "E-mail inválido."}), 400
+
+    if "telefone" in filtrados and not vd.validar_telefone(filtrados["telefone"]):
+        return jsonify({"erro": "Telefone inválido."}), 400
+
     try:
         Usuario.atualizar(g.usuario["usuario_id"], filtrados)
         Auditoria.registrar(
@@ -175,9 +160,21 @@ def atualizar_meus_dados():
 @auth_bp.route('/api/recuperar-senha', methods=['POST'])
 def esqueceu_senha():
     dados = request.get_json(silent=True) or {}
-    email = (dados.get('email') or '').strip()
+    email = (dados.get('email') or '').strip().lower()
     if not email:
         return jsonify({'erro': 'Informe o e-mail.'}), 400
+
+    ip = ip_cliente()
+    if not limite_recuperacao.permitir(f"recuperacao:{ip}"):
+        return jsonify({
+            'erro': 'Muitas solicitações. Aguarde alguns minutos e tente novamente.'
+        }), 429
+
+    if not limite_recuperacao_email.permitir(f"recuperacao-email:{email}"):
+        return jsonify({
+            'erro': 'Muitas solicitações para este e-mail. Aguarde alguns minutos.'
+        }), 429
+
     usuario = Usuario.buscar_por_email(email)
     mensagem_padrao = 'Se o e-mail estiver cadastrado, enviaremos instrucoes para redefinir a senha.'
     if not usuario:
@@ -219,8 +216,9 @@ def redefinir_senha():
     senha = dados.get('senha') or ""
     if not token:
         return jsonify({'erro': 'Token invalido ou expirado.'}), 400
-    if len(senha) < 6:
-        return jsonify({'erro': 'A senha deve ter pelo menos 6 caracteres.'}), 400
+    erro_senha = validar_senha_forte(senha)
+    if erro_senha:
+        return jsonify({'erro': erro_senha}), 400
     token_rec = TokenRecuperacao.buscar_valido(token)
     if not token_rec:
         return jsonify({'erro': 'Token invalido ou expirado.'}), 400

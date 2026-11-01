@@ -85,13 +85,13 @@ function renderizarUsuarios(usuarios) {
             <td>${getStatusBadge(u.status)}</td>
             <td>
                 <div class="acoes-grupo">
-                    <button class="btn btn-sm btn-secondary" onclick="verUsuario(${u.id})" title="Ver detalhes" aria-label="Ver detalhes">
+                    <button class="btn btn-sm btn-secondary" data-call="verUsuario" data-id="${u.id}" title="Ver detalhes" aria-label="Ver detalhes">
                         <svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg>
                     </button>
-                    <button class="btn btn-sm btn-edit" onclick="editarUsuario(${u.id})" title="Editar" aria-label="Editar usuário">
+                    <button class="btn btn-sm btn-edit" data-call="editarUsuario" data-id="${u.id}" title="Editar" aria-label="Editar usuário">
                         <svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>
                     </button>
-                    <button class="btn btn-sm btn-delete" onclick="excluirUsuario(${u.id})" title="Excluir" aria-label="Excluir usuário">
+                    <button class="btn btn-sm btn-delete" data-call="excluirUsuario" data-id="${u.id}" title="Excluir" aria-label="Excluir usuário">
                         <svg class="ic" aria-hidden="true"><use href="#i-trash"></use></svg>
                     </button>
                 </div>

@@ -4,8 +4,8 @@ let paginaServico = 1;
 const POR_PAGINA_SERVICO = 12;
 let isStaff = false;
 
-document.addEventListener('DOMContentLoaded', function () {
-        const usuario = Sessao.usuario;
+document.addEventListener('DOMContentLoaded', async function () {
+    const usuario = await Sessao.carregar();
     isStaff = usuario && (usuario.perfil === 'Administrador' || usuario.perfil === 'Bibliotecário');
 
     setupServicoForm();
@@ -148,14 +148,14 @@ function renderizarServicos(solicitacoes) {
     solicitacoes.forEach(s => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>${escapeHtml(s.usuario_nome || Sessao.usuario.nome)}</strong></td>
+            <td><strong>${escapeHtml(s.usuario_nome || (Sessao.usuario && Sessao.usuario.nome) || '-')}</strong></td>
             <td>${escapeHtml(s.tipo || '-')}</td>
             <td style="max-width:320px">${escapeHtml(s.descricao || '-')}</td>
             <td style="font-family:var(--font-mono);font-size:12px">${formatDate(s.data_solicitacao)}</td>
             <td>${getStatusBadge(s.status)}</td>
             <td>
                 ${isStaff ? `
-                    <button class="btn btn-sm btn-secondary" onclick="abrirRespostaModal(${s.id})" title="Atualizar solicitação">
+                    <button class="btn btn-sm btn-secondary" data-call="abrirRespostaModal" data-id="${s.id}" title="Atualizar solicitação">
                         <svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg> Atualizar
                     </button>
                 ` : (s.resposta ? `<span style="font-size:11px;color:var(--ink-faint)">${escapeHtml(s.resposta)}</span>` : '')}

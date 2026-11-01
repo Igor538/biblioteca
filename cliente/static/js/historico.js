@@ -4,8 +4,8 @@ let paginaHistorico = 1;
 const POR_PAGINA_HISTORICO = 12;
 let somenteAtivos = false;
 
-document.addEventListener('DOMContentLoaded', function () {
-        const usuario = Sessao.usuario;
+document.addEventListener('DOMContentLoaded', async function () {
+    const usuario = await Sessao.carregar();
     if (usuario && usuario.perfil === 'Usuário') {
         const sub = document.getElementById('historicoSubtitulo');
         if (sub) sub.textContent = 'Seu histórico de empréstimos na biblioteca';

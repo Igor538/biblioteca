@@ -230,13 +230,13 @@ function renderizarEmprestimos() {
                 <div class="acoes-grupo">
                     ${e.status === 'Emprestado' ? `
                         ${podeRenovar ? `
-                        <button class="btn btn-sm btn-secondary" onclick="renovarEmprestimo(${e.id})" title="Renovar" aria-label="Renovar empréstimo">
+                        <button class="btn btn-sm btn-secondary" data-call="renovarEmprestimo" data-id="${e.id}" title="Renovar" aria-label="Renovar empréstimo">
                             <svg class="ic" aria-hidden="true"><use href="#i-refresh"></use></svg> Renovar
                         </button>` : ''}
                         <a class="btn btn-sm btn-success" href="/devolucoes">
                             <svg class="ic" aria-hidden="true"><use href="#i-return"></use></svg> Devolver
                         </a>
-                    ` : `<button class="btn btn-sm btn-secondary" onclick="verRenovacoes(${e.id})" title="Ver renovações" aria-label="Ver renovações">
+                    ` : `<button class="btn btn-sm btn-secondary" data-call="verRenovacoes" data-id="${e.id}" title="Ver renovações" aria-label="Ver renovações">
                             <svg class="ic" aria-hidden="true"><use href="#i-history"></use></svg> Renovações
                         </button>`}
                 </div>

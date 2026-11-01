@@ -281,10 +281,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-        if (senhaValor.length < 6) {
+        if (senhaValor.length < 8) {
 
             mensagem.textContent =
-                "A senha deve ter pelo menos 6 caracteres.";
+                "A senha deve ter pelo menos 8 caracteres.";
+
+            mensagem.className = "mensagem-erro";
+
+            senha.focus();
+
+            return;
+        }
+
+        if (senhaValor.length > 128 ||
+            !/[A-Za-zÀ-ÿ]/.test(senhaValor) ||
+            !/\d/.test(senhaValor)) {
+
+            mensagem.textContent =
+                "A senha deve ter até 128 caracteres, com pelo menos uma letra e um número.";
 
             mensagem.className = "mensagem-erro";
 

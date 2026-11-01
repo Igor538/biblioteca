@@ -11,6 +11,7 @@ __pycache__/
 # Arquivos de ambiente
 .env
 .env.*
+!.env.example
 
 # Logs
 *.log
@@ -31,3 +32,13 @@ Thumbs.db
 banco/*.db
 banco/*.sqlite
 banco/*.sqlite3
+
+# Credenciais e chaves privadas
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Estado local
+instance/
+logs/

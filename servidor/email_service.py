@@ -1,3 +1,4 @@
+import html
 import os
 import smtplib
 import ssl
@@ -28,9 +29,11 @@ def montar_email_recuperacao(nome, link, horas):
 
     Retorna uma tupla (texto, html) com as duas versoes da mensagem.
     """
-    saudacao = f"Olá, {nome}!" if nome else "Olá!"
+    saudacao_texto = f"Olá, {nome}!" if nome else "Olá!"
+    saudacao_html = f"Olá, {html.escape(nome)}!" if nome else "Olá!"
+    link_html = html.escape(link or "", quote=True)
 
-    texto = f"""{saudacao}
+    texto = f"""{saudacao_texto}
 
 Recebemos um pedido para redefinir a senha da sua conta na Biblioteca Digital.
 
@@ -40,7 +43,7 @@ Acesse o link abaixo para criar uma nova senha:
 O link expira em {horas} hora(s). Se você não solicitou a redefinição, ignore este e-mail.
 """
 
-    html = f"""<!doctype html>
+    html_body = f"""<!doctype html>
 <html lang="pt-BR">
 <body style="margin:0;padding:0;background:#eef1f7;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f7;padding:32px 12px;">
@@ -54,13 +57,13 @@ O link expira em {horas} hora(s). Se você não solicitou a redefinição, ignor
           </tr>
           <tr>
             <td style="padding:32px;color:#2b3440;font-size:15px;line-height:1.65;">
-              <p style="margin:0 0 16px;font-size:16px;">{saudacao}</p>
+              <p style="margin:0 0 16px;font-size:16px;">{saudacao_html}</p>
               <p style="margin:0 0 16px;">Recebemos um pedido para <strong>redefinir a senha</strong> da sua conta.</p>
               <p style="margin:0 0 28px;">Para criar uma nova senha, clique no botão abaixo:</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                 <tr>
                   <td align="center" style="border-radius:9px;background:#1f4e79;">
-                    <a href="{link}" target="_blank" style="display:inline-block;padding:14px 34px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:9px;">Redefinir minha senha</a>
+                    <a href="{link_html}" target="_blank" style="display:inline-block;padding:14px 34px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:9px;">Redefinir minha senha</a>
                   </td>
                 </tr>
               </table>
@@ -80,7 +83,7 @@ O link expira em {horas} hora(s). Se você não solicitou a redefinição, ignor
 </body>
 </html>"""
 
-    return texto, html
+    return texto, html_body
 
 
 def enviar_email(destino, assunto, corpo_texto, corpo_html=None):

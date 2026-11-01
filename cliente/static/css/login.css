@@ -33,6 +33,44 @@ body {
 }
 
 
+/* Coluna do formulário + link de volta */
+
+.login-col {
+    display: flex;
+
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 14px;
+
+    width: 100%;
+    max-width: 400px;
+}
+
+
+/* Link para voltar à página inicial */
+
+.voltar-site {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #667085;
+
+    font-size: 14px;
+
+    text-decoration: none;
+
+    transition: color 0.2s;
+}
+
+.voltar-site:hover {
+    color: #3498db;
+}
+
+
 /* Caixa de login */
 
 .container {

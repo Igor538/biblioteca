@@ -4,8 +4,9 @@ let paginaAtual = 1;
 const POR_PAGINA = 12;
 let modoGrade = true;
 
-document.addEventListener('DOMContentLoaded', function () {
-        carregarLivros();
+document.addEventListener('DOMContentLoaded', async function () {
+    await Sessao.carregar();
+    carregarLivros();
     setupLivrosModal();
     setupSearch();
     setupCategorias();
@@ -125,14 +126,14 @@ function renderizarGrade(livros) {
                 </div>
             </div>
             <div class="livro-card-acoes">
-                <button class="btn btn-sm btn-secondary" onclick="verDetalhes(${livro.id})" title="Ver detalhes">
+                <button class="btn btn-sm btn-secondary" data-call="verDetalhes" data-id="${livro.id}" title="Ver detalhes">
                     <svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg> Detalhes
                 </button>
                 ${isAdmin() ? `
-                    <button class="btn btn-sm btn-edit" onclick="editarLivro(${livro.id})" title="Editar" aria-label="Editar livro">
+                    <button class="btn btn-sm btn-edit" data-call="editarLivro" data-id="${livro.id}" title="Editar" aria-label="Editar livro">
                         <svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>
                     </button>
-                    <button class="btn btn-sm btn-delete" onclick="excluirLivro(${livro.id})" title="Excluir" aria-label="Excluir livro">
+                    <button class="btn btn-sm btn-delete" data-call="excluirLivro" data-id="${livro.id}" title="Excluir" aria-label="Excluir livro">
                         <svg class="ic" aria-hidden="true"><use href="#i-trash"></use></svg>
                     </button>
                 ` : ''}
@@ -165,14 +166,14 @@ function renderizarTabela(livros) {
             <td>${livro.quantidade}</td>
             <td>${getStatusBadge(st)}</td>
             <td>
-                <button class="btn btn-sm btn-secondary" onclick="verDetalhes(${livro.id})" title="Detalhes" aria-label="Ver detalhes do livro">
+                <button class="btn btn-sm btn-secondary" data-call="verDetalhes" data-id="${livro.id}" title="Detalhes" aria-label="Ver detalhes do livro">
                     <svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg>
                 </button>
                 ${isAdmin() ? `
-                    <button class="btn btn-sm btn-edit" onclick="editarLivro(${livro.id})" title="Editar" aria-label="Editar livro">
+                    <button class="btn btn-sm btn-edit" data-call="editarLivro" data-id="${livro.id}" title="Editar" aria-label="Editar livro">
                         <svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>
                     </button>
-                    <button class="btn btn-sm btn-delete" onclick="excluirLivro(${livro.id})" title="Excluir" aria-label="Excluir livro">
+                    <button class="btn btn-sm btn-delete" data-call="excluirLivro" data-id="${livro.id}" title="Excluir" aria-label="Excluir livro">
                         <svg class="ic" aria-hidden="true"><use href="#i-trash"></use></svg>
                     </button>
                 ` : ''}

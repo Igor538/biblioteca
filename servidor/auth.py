@@ -1,5 +1,6 @@
 """Autenticação, sessões e controle de permissões por perfil."""
 
+import os
 import secrets
 import functools
 from flask import request, jsonify, g
@@ -91,15 +92,45 @@ def registrar_auditoria(operacao, dados=None):
     Auditoria.registrar(operacao, dados, responsavel=responsavel_atual())
 
 
+def _senha_inicial(variavel, rotulo, padrao_dev):
+    """Senha inicial da conta de gestão.
+
+    Ordem de precedência:
+      1. ADMIN_SENHA/BIB_SENHA, quando definidas;
+      2. a senha padrão de desenvolvimento (contas de teste do projeto);
+      3. em produção, exige a variável de ambiente.
+    """
+    senha = os.environ.get(variavel, "").strip()
+    if senha:
+        return senha, False
+
+    ambiente = (
+        os.environ.get("APP_ENV") or os.environ.get("FLASK_ENV") or ""
+    ).strip().lower()
+
+    if ambiente in {"producao", "production"}:
+        raise RuntimeError(
+            f"Defina {variavel} no ambiente antes de criar a conta {rotulo}."
+        )
+
+    return padrao_dev, True
+
+
 def inicializar_administradores():
-    """Garante contas padrão de acesso (idempotente)."""
+    """Garante as contas de gestão (idempotente).
+
+    Em desenvolvimento usa as senhas de teste do projeto; em produção exige
+    ADMIN_SENHA/BIB_SENHA no ambiente.
+    """
     from models import Usuario, Auditoria
 
     contas = [
         {
             "nome": "Administrador do Sistema",
-            "email": "admin@biblioteca.local",
-            "senha": "admin",
+            "email": os.environ.get("ADMIN_EMAIL", "admin@biblioteca.local"),
+            "variavel_senha": "ADMIN_SENHA",
+            "senha_padrao": "admin",
+            "rotulo": "Administrador",
             "perfil": "Administrador",
             "tipo_usuario": "Servidor",
             "telefone": "(19) 0000-0000",
@@ -107,8 +138,10 @@ def inicializar_administradores():
         },
         {
             "nome": "Bibliotecária",
-            "email": "bibliotecaria@biblioteca.local",
-            "senha": "biblioteca",
+            "email": os.environ.get("BIB_EMAIL", "bibliotecaria@biblioteca.local"),
+            "variavel_senha": "BIB_SENHA",
+            "senha_padrao": "biblioteca",
+            "rotulo": "Bibliotecário",
             "perfil": "Bibliotecário",
             "tipo_usuario": "Servidor",
             "telefone": "(19) 0000-0001",
@@ -118,7 +151,18 @@ def inicializar_administradores():
 
     for conta in contas:
         existente = Usuario.buscar_por_email(conta["email"])
-        if not existente:
-            conta["senha"] = generate_password_hash(conta["senha"])
-            Usuario.criar(conta)
-            Auditoria.registrar("Cadastro de Usuário", {"nome": conta["nome"], "perfil": conta["perfil"]}, "Sistema")
+        if existente:
+            continue
+
+        senha, _ = _senha_inicial(
+            conta.pop("variavel_senha"),
+            conta.pop("rotulo"),
+            conta.pop("senha_padrao"),
+        )
+        conta["senha"] = generate_password_hash(senha, method="scrypt")
+        Usuario.criar(conta)
+        Auditoria.registrar(
+            "Cadastro de Usuário",
+            {"nome": conta["nome"], "perfil": conta["perfil"]},
+            "Sistema",
+        )
