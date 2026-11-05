@@ -130,10 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
                  * Essa rota existe no app.py.
                  */
 
-                if (resultado.usuario) {
-                    localStorage.setItem("biblioteca_usuario", JSON.stringify(resultado.usuario));
-                }
-
                 setTimeout(() => {
                     window.location.href = "/sistema";
                 }, 300);
@@ -203,3 +199,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('btnEsqueceuSenha');if(b)b.addEventListener('click',()=>location.href='/recuperar-senha');});

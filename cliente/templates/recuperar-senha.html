@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Biblioteca</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="login-area">
+        <div class="container">
+            <h2>Recuperar Senha</h2>
+            <div id="mensagem"></div>
+
+            <div id="formEmail">
+                <input type="email" id="email" placeholder="Seu e-mail" required>
+                <button type="button" id="btnEnviar">Enviar instruções</button>
+            </div>
+
+            <div id="formReset" style="display:none">
+                <input type="password" id="novaSenha" placeholder="Nova senha" required>
+                <button type="button" id="btnResetar">Redefinir senha</button>
+            </div>
+
+            <p><a href="/login">Voltar ao login</a></p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/recuperar-senha.js') }}"></script>
+</body>
+</html>

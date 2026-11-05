@@ -33,6 +33,44 @@ body {
 }
 
 
+/* Coluna do formulário + link de volta */
+
+.login-col {
+    display: flex;
+
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 14px;
+
+    width: 100%;
+    max-width: 400px;
+}
+
+
+/* Link para voltar à página inicial */
+
+.voltar-site {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #667085;
+
+    font-size: 14px;
+
+    text-decoration: none;
+
+    transition: color 0.2s;
+}
+
+.voltar-site:hover {
+    color: #3498db;
+}
+
+
 /* Caixa de login */
 
 .container {
@@ -224,4 +262,20 @@ body {
 
         height: 250px;
     }
+}
+/* Botao esqueceu senha */
+#btnEsqueceuSenha {
+    width: auto;
+    margin: 0 0 10px 0;
+    padding: 6px 10px;
+    background: transparent;
+    color: #3498db;
+    font-size: 13px;
+    font-weight: normal;
+    text-decoration: underline;
+    text-align: left;
+}
+#btnEsqueceuSenha:hover {
+    background: transparent;
+    color: #2980b9;
 }

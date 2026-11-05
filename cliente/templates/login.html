@@ -14,45 +14,62 @@
 
     <div class="login-area">
 
-        <!-- Formulário de login -->
-        <div class="container">
+        <div class="login-col">
 
-            <h2>Login da Biblioteca 📖</h2>
+            <a class="voltar-site" href="{{ url_for('index') }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+                Voltar ao site
+            </a>
 
-            <form id="loginForm">
+            <div class="container">
 
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="E-mail"
-                    required
-                >
+                <h2>Login da Biblioteca</h2>
 
-                <input
-                    type="password"
-                    id="senha"
-                    name="senha"
-                    placeholder="Senha"
-                    required
-                >
+                <form id="loginForm">
 
-                <div id="mensagem"></div>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="E-mail"
+                        required
+                    >
 
-                <button type="submit">
-                    Entrar
-                </button>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Senha"
+                        required
+                    >
 
-            </form>
+                    <button type="button" id="btnEsqueceuSenha" class="link-btn">Esqueceu sua senha?</button>
 
-            <p>
-                Não possui conta?
-                <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
-            </p>
+                    <div id="mensagem"></div>
+
+                    <button type="submit">
+                        Entrar
+                    </button>
+
+                </form>
+
+                <p>
+                    Não possui conta?
+                    <a href="{{ url_for('cadastro') }}">Cadastre-se</a>
+                </p>
+
+                <p>
+                    Quer apenas consultar?
+                    <a href="/catalogo">Ver livros sem cadastro</a>
+                </p>
+
+            </div>
 
         </div>
 
-        <!-- GIF do livro -->
         <div class="gif-container">
 
             <img

@@ -3,6 +3,7 @@ let paginaConsulta = 1;
 const POR_PAGINA_CONSULTA = 12;
 
 document.addEventListener('DOMContentLoaded', function () {
+        carregarTodos();
         setupBusca();
     setupDetalheModal();
 });
@@ -53,7 +54,7 @@ function realizarBusca(termo, campo) {
         .finally(() => hideLoading());
 }
 
-function renderizarResultados() {
+async function renderizarResultados() {
     const grid = document.getElementById('consultaGrid');
     grid.innerHTML = '';
 
@@ -66,7 +67,7 @@ function renderizarResultados() {
     if (paginaConsulta > totalPaginas) paginaConsulta = totalPaginas;
     const pagina = paginar(resultadoBusca, paginaConsulta, POR_PAGINA_CONSULTA);
 
-    const usuario = Sessao.usuario;
+    const usuario = await Sessao.carregar();
     const podeReservar = usuario && usuario.perfil === 'Usuário';
 
     pagina.forEach(livro => {
@@ -89,12 +90,12 @@ function renderizarResultados() {
                 </div>
             </div>
             <div class="livro-card-acoes">
-                <button class="btn btn-sm btn-secondary" onclick="verDetalheConsulta(${livro.id})" title="Ver detalhes">
-                    <svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg> Detalhes
+                <button class="btn btn-sm btn-secondary" data-call="verDetalheConsulta" data-id="${livro.id}" title="Ver detalhes">
+                     Detalhes
                 </button>
                 ${podeReservar ? `
                     <a class="btn btn-sm btn-primary" href="/reservas?livro=${livro.id}" title="Reservar">
-                        <svg class="ic" aria-hidden="true"><use href="#i-reserve"></use></svg> Reservar
+                         Reservar
                     </a>
                 ` : ''}
             </div>
@@ -159,4 +160,36 @@ function setupDetalheModal() {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) fecharModal('detalheConsultaModal');
     });
+}
+
+
+function carregarTodos() {
+    showLoading();
+    const grid = document.getElementById("consultaGrid");
+    if (grid) grid.innerHTML = "";
+    API.get("/api/livros")
+        .then(data => {
+            resultadoBusca = data || [];
+            const contagem = document.getElementById("consultaContagem");
+            if (contagem) contagem.textContent = `${resultadoBusca.length} obra(s)`;
+            renderizarResultados();
+        })
+        .catch(() => {})
+        .finally(() => hideLoading());
+}
+
+
+function carregarTodos() {
+    showLoading();
+    const grid = document.getElementById("consultaGrid");
+    if (grid) grid.innerHTML = "";
+    API.get("/api/livros")
+        .then(data => {
+            resultadoBusca = data || [];
+            const contagem = document.getElementById("consultaContagem");
+            if (contagem) contagem.textContent = `${resultadoBusca.length} obra(s) no acervo`;
+            renderizarResultados();
+        })
+        .catch(() => {})
+        .finally(() => hideLoading());
 }

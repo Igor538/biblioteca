@@ -51,7 +51,7 @@ function renderizarNotificacoes(notificacoes, naoLidas) {
                 <p>${escapeHtml(n.mensagem)}</p>
                 <span class="notif-data">${formatDate(n.data_criacao)}${n.lida ? '' : ' · <strong>nova</strong>'}</span>
             </div>
-            ${n.lida ? '' : `<button class="btn btn-sm btn-secondary" onclick="marcarLida(${n.id})" title="Marcar como lida">Marcar como lida</button>`}
+            ${n.lida ? '' : `<button class="btn btn-sm btn-secondary" data-call="marcarLida" data-id="${n.id}" title="Marcar como lida">Marcar como lida</button>`}
         `;
         container.appendChild(item);
     });

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, jsonify, g
 from models import Penalidade
 from auth import requer_autenticacao, requer_perfil
 from . import erro_interno

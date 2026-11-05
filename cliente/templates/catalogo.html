@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogo de Livros - Biblioteca</title>
+    <link rel="stylesheet" href="/static/css/sistema.css">
+    <link rel="shortcut icon" href="/static/img/books.png" type="image/x-icon">
+</head>
+<body style="padding:20px;max-width:1100px;margin:0 auto">
+    <a href="/login" class="btn btn-secondary" style="margin-bottom:16px; border-radius: 5px;">&larr; Voltar</a>
+    <h1>Catalogo de Livros</h1>
+    <p>Pesquise o acervo sem precisar de cadastro.</p>
+    <div class="search-row" style="margin:20px 0">
+        <div class="search-box search-large">
+            <input type="text" id="searchTermo" placeholder="Digite o termo de busca..." aria-label="Termo de busca">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+            <label for="campoBusca">Campo</label>
+            <select id="campoBusca">
+                <option value="">Todos os campos</option>
+                <option value="titulo">Titulo</option>
+                <option value="autor">Autor</option>
+                <option value="isbn">ISBN</option>
+                <option value="editora">Editora</option>
+                <option value="assuntos">Assuntos</option>
+                <option value="categoria">Categoria</option>
+                <option value="localizacao">Localizacao</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" id="btnBuscar">Buscar</button>
+    </div>
+    <p id="consultaContagem" class="result-count"></p>
+    <div id="consultaGrid" class="livros-grid"></div>
+    <div class="pagination" id="consultaPaginacao"></div>
+
+    <div class="modal" id="detalheConsultaModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Detalhes da Obra</h3>
+                <button class="modal-close" aria-label="Fechar">x</button>
+            </div>
+            <div class="modal-body" id="detalheConsultaBody"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/consulta.js"></script>
+</body>
+</html>

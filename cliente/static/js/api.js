@@ -11,40 +11,58 @@ const API_BASE = window.location.protocol === 'file:'
 
 
 // ===============================
-// SESSÃO (token)
+// SESSÃO (cookie httpOnly, só em memória)
 // ===============================
+//
+// Nenhum dado do usuário é gravado em localStorage/sessionStorage: o
+// navegador guarda apenas o cookie de sessão (httpOnly), inacessível ao JS.
 
 const Sessao = {
-    TOKEN_KEY: 'biblioteca_token',
-    USER_KEY: 'biblioteca_usuario',
-
-    get token() {
-        return localStorage.getItem(this.TOKEN_KEY);
-    },
+    _usuario: null,
+    _carregando: null,
 
     get usuario() {
-        try {
-            return JSON.parse(localStorage.getItem(this.USER_KEY) || 'null');
-        } catch {
-            return null;
-        }
+        return this._usuario;
     },
 
-    salvar(token, usuario) {
-        localStorage.setItem(this.TOKEN_KEY, token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(usuario));
+    definir(usuario) {
+        this._usuario = usuario || null;
+        return this._usuario;
     },
 
     limpar() {
-        localStorage.removeItem(this.TOKEN_KEY);
-        localStorage.removeItem(this.USER_KEY);
+        this._usuario = null;
+        this._carregando = null;
+    },
+
+    async carregar(forcar = false) {
+        if (this._usuario && !forcar) return this._usuario;
+        if (this._carregando && !forcar) return this._carregando;
+
+        this._carregando = (async () => {
+            try {
+                const dados = await API.request('/api/usuario', {
+                    method: 'GET',
+                    silent401: true
+                });
+                this._usuario = dados && dados.usuario ? dados.usuario : null;
+            } catch {
+                this._usuario = null;
+            } finally {
+                this._carregando = null;
+            }
+            return this._usuario;
+        })();
+
+        return this._carregando;
     },
 
     autenticado() {
-        return !!this.token;
+        return !!this._usuario;
     },
 
-    precisaLogin() {
+    async precisaLogin() {
+        await this.carregar();
         if (!this.autenticado()) {
             window.location.href = '/login';
             return true;
@@ -62,18 +80,15 @@ const API = {
 
     async request(endpoint, options = {}) {
 
-        const headers = {
-            'Content-Type': 'application/json',
-            ...(options.headers || {})
-        };
-
-        if (Sessao.token) {
-            headers['Authorization'] = `Bearer ${Sessao.token}`;
-        }
+        const { silent401 = false, ...resto } = options;
 
         const config = {
-            headers,
-            ...options,
+            credentials: 'same-origin',
+            ...resto,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            }
         };
 
         try {
@@ -85,16 +100,21 @@ const API = {
 
             if (response.status === 401 && Sessao.autenticado()) {
                 Sessao.limpar();
-                if (!window.location.pathname.endsWith('/login')) {
+                if (!silent401 && !window.location.pathname.endsWith('/login')) {
                     window.location.href = '/login';
                 }
             }
 
-            const data = await response.json();
+            let data = null;
+            try {
+                data = await response.json();
+            } catch {
+                data = null;
+            }
 
             if (!response.ok) {
                 throw new Error(
-                    data.erro ||
+                    (data && data.erro) ||
                     `Erro ${response.status}: ${response.statusText}`
                 );
             }
@@ -497,3 +517,23 @@ function debounce(fn, ms = 300) {
 function pluralizar(total, singular, plural) {
     return total === 1 ? singular : plural;
 }
+
+// ===============================
+// ACOES DECLARATIVAS (sem onclick inline)
+// ===============================
+
+document.addEventListener('click', (evento) => {
+    const alvo = evento.target.closest('[data-call]');
+    if (!alvo) return;
+
+    const nome = alvo.getAttribute('data-call');
+    const fn = window[nome];
+    if (typeof fn !== 'function') return;
+
+    evento.preventDefault();
+
+    const bruto = alvo.getAttribute('data-id');
+    const id = bruto !== null && /^\d+$/.test(bruto) ? Number(bruto) : bruto;
+
+    fn(id, alvo, evento);
+});

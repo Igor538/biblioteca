@@ -1,7 +1,8 @@
 """Modelos CRUD e regras de negócio do sistema de biblioteca."""
 
+import hashlib
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from database import query, query_one, execute, execute_insert, transacao, _executar
 from werkzeug.security import generate_password_hash
 import validators as vd
@@ -45,11 +46,15 @@ def _filtra_campos(dados, colunas):
 
 def _preparar_senha(senha):
     """Gera hash seguro para a senha, a menos que já seja um hash (ex.: importações)."""
-    if not senha:
+    if not senha or not isinstance(senha, str):
         return None
     if senha.startswith(("scrypt:", "pbkdf2:", "sha256:")):
         return senha
-    return generate_password_hash(senha)
+    return generate_password_hash(senha, method="scrypt")
+
+
+def _hash_token(token):
+    return hashlib.sha256((token or "").encode("utf-8")).hexdigest()
 
 
 # ============================================================
@@ -237,7 +242,10 @@ class Usuario:
 
     @staticmethod
     def buscar_por_email(email):
-        return query_one(f"SELECT * FROM {Usuario.TABLE} WHERE email = ?", [email])
+        return query_one(
+            f"SELECT * FROM {Usuario.TABLE} WHERE LOWER(email) = LOWER(?)",
+            [email],
+        )
 
     @staticmethod
     def buscar_por_prontuario(prontuario):
@@ -258,6 +266,12 @@ class Usuario:
         categoria = dados.get("tipo_usuario", "Discente Regular")
         if not vd.validar_categoria(categoria):
             raise ValueError("Categoria inválida.")
+        if "perfil" in dados and dados["perfil"] not in vd.PERFIS:
+            raise ValueError("Perfil inválido.")
+        if "status" in dados and dados["status"] not in vd.STATUS_USUARIO:
+            raise ValueError("Status inválido.")
+        if Usuario.buscar_por_email(dados.get("email", "")):
+            raise ValueError("Este e-mail já está cadastrado.")
 
         campos = _filtra_campos(dados, COLUNAS_USUARIO)
         if "senha" in campos:
@@ -276,22 +290,44 @@ class Usuario:
     @staticmethod
     def atualizar(id, dados):
         dados = vd.limpar_campos(dict(dados), ["nome", "email", "telefone", "endereco", "prontuario", "curso"])
-        if "email" in dados and not vd.validar_email(dados.get("email", "")):
-            raise ValueError("E-mail inválido.")
+        if "email" in dados:
+            if not vd.validar_email(dados.get("email", "")):
+                raise ValueError("E-mail inválido.")
+            existente = Usuario.buscar_por_email(dados["email"])
+            if existente and existente["id"] != id:
+                raise ValueError("Este e-mail já está em uso por outro usuário.")
         if "telefone" in dados and not vd.validar_telefone(dados.get("telefone", "")):
             raise ValueError("Telefone inválido. Use o formato (11) 99999-0000.")
         if "prontuario" in dados and not vd.validar_prontuario(dados.get("prontuario", "")):
             raise ValueError("Prontuário inválido. Use o formato CV0000000.")
+        if "perfil" in dados and dados["perfil"] not in vd.PERFIS:
+            raise ValueError("Perfil inválido.")
+        if "status" in dados and dados["status"] not in vd.STATUS_USUARIO:
+            raise ValueError("Status inválido.")
+        if "tipo_usuario" in dados and not vd.validar_categoria(dados["tipo_usuario"]):
+            raise ValueError("Categoria inválida.")
 
         campos = _filtra_campos(dados, COLUNAS_USUARIO)
         if not campos:
             return 0
         if "senha" in campos:
+            if not campos["senha"]:
+                raise ValueError("A senha não pode ser vazia.")
             campos["senha"] = _preparar_senha(campos["senha"])
         colunas = ", ".join([f"{k} = ?" for k in campos])
         valores = list(campos.values()) + [id]
         execute(f"UPDATE {Usuario.TABLE} SET {colunas} WHERE id = ?", valores)
         Auditoria.registrar("Alteração de Usuário", {"id": id, "dados": {k: v for k, v in campos.items() if k != "senha"}})
+        return True
+
+    @staticmethod
+    def alterar_senha(id, senha):
+        """Define uma nova senha (com hash) para o usuário informado."""
+        hash_senha = _preparar_senha(senha)
+        if not hash_senha:
+            raise ValueError("A nova senha é obrigatória.")
+        execute(f"UPDATE {Usuario.TABLE} SET senha = ? WHERE id = ?", [hash_senha, id])
+        Auditoria.registrar("Alteração de senha", {"usuario_id": id})
         return True
 
     @staticmethod
@@ -445,7 +481,7 @@ class Livro:
     ]
 
     @staticmethod
-    def buscar_avancada(termo=None, campo=None):
+    def buscar_avancada(termo=None, campo=None, limite=200):
         """Consulta ao acervo — busca por título, autor, ISBN, editora, assunto,
         palavra-chave, série, coleção. O campo é validado contra uma whitelist
         para evitar injeção de SQL."""
@@ -466,7 +502,11 @@ class Livro:
             where.append("(" + " OR ".join(termos) + ")")
 
         where_sql = ("WHERE " + " AND ".join(where)) if where else ""
-        return query(base + f" {where_sql} ORDER BY l.titulo ASC", params)
+        limite = max(1, min(int(limite or 200), 500))
+        return query(
+            base + f" {where_sql} ORDER BY l.titulo ASC LIMIT ?",
+            params + [limite],
+        )
 
 
 # ============================================================
@@ -483,7 +523,7 @@ class Emprestimo:
                        e.data_emprestimo, e.data_prevista_devolucao, e.data_devolucao,
                        e.renovacoes, e.status,
                        (CASE WHEN e.status = 'Emprestado' AND e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -696,7 +736,7 @@ class Emprestimo:
                        e.data_emprestimo, e.data_prevista_devolucao, e.data_devolucao,
                        e.renovacoes, e.status,
                        (CASE WHEN e.data_devolucao IS NOT NULL AND e.data_devolucao > e.data_prevista_devolucao
-                             THEN CAST(julianday(e.data_devolucao) - julianday(e.data_prevista_devolucao) AS INTEGER) ELSE 0 END) AS dias_atraso
+                             THEN (e.data_devolucao - e.data_prevista_devolucao) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -708,7 +748,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, l.titulo AS livro_titulo, l.isbn AS livro_isbn,
                        (CASE WHEN e.data_devolucao IS NOT NULL AND e.data_devolucao > e.data_prevista_devolucao
-                             THEN CAST(julianday(e.data_devolucao) - julianday(e.data_prevista_devolucao) AS INTEGER) ELSE 0 END) AS dias_atraso
+                             THEN (e.data_devolucao - e.data_prevista_devolucao) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN livros l ON e.livro_id = l.id
                 WHERE e.usuario_id = ?
@@ -719,7 +759,7 @@ class Emprestimo:
     @staticmethod
     def renovacoes_do_emprestimo(emprestimo_id):
         return query(
-            f"SELECT * FROM renovacoes WHERE emprestimo_id = ? ORDER BY data_renovacao DESC",
+            "SELECT * FROM renovacoes WHERE emprestimo_id = ? ORDER BY data_renovacao DESC",
             [emprestimo_id]
         )
 
@@ -758,7 +798,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, u.nome AS usuario_nome, l.titulo AS livro_titulo,
                        (CASE WHEN e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -771,7 +811,7 @@ class Emprestimo:
         return query(
             f"""SELECT e.*, u.nome AS usuario_nome, l.titulo AS livro_titulo,
                        (CASE WHEN e.data_prevista_devolucao < CURRENT_DATE
-                             THEN max(CAST(julianday(CURRENT_DATE) - julianday(e.data_prevista_devolucao) AS INTEGER), 0) ELSE 0 END) AS dias_atraso
+                             THEN GREATEST(CURRENT_DATE - e.data_prevista_devolucao, 0) ELSE 0 END) AS dias_atraso
                 FROM {Emprestimo.TABLE} e
                 JOIN usuarios u ON e.usuario_id = u.id
                 JOIN livros l ON e.livro_id = l.id
@@ -1012,3 +1052,59 @@ class Sessao:
     @staticmethod
     def encerrar(token):
         return execute(f"DELETE FROM {Sessao.TABLE} WHERE token = ?", [token])
+
+
+# ============================================================
+# RECUPERAÇÃO DE SENHA (tokens de redefinição)
+# ============================================================
+class TokenRecuperacao:
+    TABLE = "tokens_recuperacao"
+    EXPIRACAO_HORAS = 1
+
+    @staticmethod
+    def criar(usuario_id, token, data_expiracao):
+        # Invalida links anteriores ainda nao usados deste usuario
+        execute(
+            f"DELETE FROM {TokenRecuperacao.TABLE} WHERE usuario_id = ? AND usado = FALSE",
+            [usuario_id]
+        )
+        # Apenas o hash do token e persistido: o valor puro so existe no link.
+        execute(
+            f"INSERT INTO {TokenRecuperacao.TABLE} (token, usuario_id, data_expiracao, usado) VALUES (?, ?, ?, FALSE)",
+            [_hash_token(token), usuario_id, data_expiracao]
+        )
+        return token
+
+    @staticmethod
+    def buscar_valido(token):
+        token_rec = query_one(
+            f"SELECT * FROM {TokenRecuperacao.TABLE} WHERE token = ? AND usado = FALSE",
+            [_hash_token(token)]
+        )
+        if not token_rec:
+            return None
+        expiracao = token_rec.get("data_expiracao")
+        if expiracao:
+            if isinstance(expiracao, str):
+                try:
+                    expiracao = datetime.fromisoformat(expiracao)
+                except ValueError:
+                    return None
+            if expiracao < datetime.now():
+                TokenRecuperacao.remover(token)
+                return None
+        return token_rec
+
+    @staticmethod
+    def marcar_usado(token):
+        execute(
+            f"UPDATE {TokenRecuperacao.TABLE} SET usado = TRUE WHERE token = ?",
+            [_hash_token(token)]
+        )
+
+    @staticmethod
+    def remover(token):
+        execute(
+            f"DELETE FROM {TokenRecuperacao.TABLE} WHERE token = ?",
+            [_hash_token(token)]
+        )

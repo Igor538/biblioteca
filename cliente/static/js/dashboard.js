@@ -12,22 +12,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 async function verificarSessao() {
-    try {
-        const resposta = await fetch('/api/usuario');
-        if (resposta.status === 401) {
-            window.location.href = '/login';
-            return false;
-        }
-        const resultado = await resposta.json();
-        if (resultado.sucesso && resultado.usuario) {
-            return resultado.usuario;
-        }
+    const usuario = await Sessao.carregar();
+    if (!usuario) {
         window.location.href = '/login';
-        return false;
-    } catch (erro) {
-        window.location.href = '/login';
-        return false;
+        return null;
     }
+    return usuario;
 }
 
 async function carregarDashboardLeitor(usuario) {

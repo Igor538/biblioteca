@@ -270,8 +270,13 @@ function setupTopbarSombra() {
 // SESSÃO — encerrar
 // -------------------------------
 async function encerrarSessao() {
+    try {
+        await API.post('/api/logout', {});
+    } catch {
+        // Sessão já expirada: segue para o login mesmo assim.
+    }
     Sessao.limpar();
-    window.location.href = '/logout';
+    window.location.href = '/login';
 }
 
 
@@ -288,24 +293,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     const publica = pagina === '/' || pagina === '/login' || pagina === '/cadastro' ||
         pagina === '/index' || pagina === '/home';
 
-    try {
-        const resposta = await fetch('/api/usuario');
-        if (resposta.status === 401) {
-            localStorage.removeItem('biblioteca_usuario');
-            if (!publica) {
-                window.location.href = '/login';
-            }
-            return;
-        }
-        const resultado = await resposta.json();
-        if (resultado.sucesso && resultado.usuario) {
-            localStorage.setItem('biblioteca_usuario', JSON.stringify(resultado.usuario));
-            renderizarSidebar(resultado.usuario);
-            renderizarBadgeNotificacoes();
-        }
-    } catch (erro) {
+    const usuario = await Sessao.carregar();
+
+    if (!usuario) {
         if (!publica) {
             window.location.href = '/login';
         }
+        return;
     }
+
+    renderizarSidebar(usuario);
+    renderizarBadgeNotificacoes();
 });
